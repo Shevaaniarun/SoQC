@@ -35,7 +35,7 @@ export default function Navigation() {
         style={{
           position: 'fixed',
           top: 20,
-          left: '50%',
+          left: '25%',
           transform: 'translateX(-50%)',
           zIndex: 1000,
           width: 'min(900px, calc(100vw - 40px))',
