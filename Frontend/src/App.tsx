@@ -71,36 +71,36 @@ function AnimatedRoutes() {
       />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-        <Route path="/" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}><Home /></Suspense>
-          </PageTransition>
-        } />
-        <Route path="/events" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}><Events /></Suspense>
-          </PageTransition>
-        } />
-        <Route path="/articles" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}><Articles /></Suspense>
-          </PageTransition>
-        } />
-        <Route path="/projects" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}><Projects /></Suspense>
-          </PageTransition>
-        } />
-        <Route path="/committee" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}><Committee /></Suspense>
-          </PageTransition>
-        } />
-        <Route path="/logo" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}><LogoExplain /></Suspense>
-          </PageTransition>
-        } />
+          <Route path="/" element={
+            <PageTransition>
+              <Suspense fallback={<PageLoader />}><Home /></Suspense>
+            </PageTransition>
+          } />
+          <Route path="/events" element={
+            <PageTransition>
+              <Suspense fallback={<PageLoader />}><Events /></Suspense>
+            </PageTransition>
+          } />
+          <Route path="/articles" element={
+            <PageTransition>
+              <Suspense fallback={<PageLoader />}><Articles /></Suspense>
+            </PageTransition>
+          } />
+          <Route path="/projects" element={
+            <PageTransition>
+              <Suspense fallback={<PageLoader />}><Projects /></Suspense>
+            </PageTransition>
+          } />
+          <Route path="/committee" element={
+            <PageTransition>
+              <Suspense fallback={<PageLoader />}><Committee /></Suspense>
+            </PageTransition>
+          } />
+          <Route path="/logo" element={
+            <PageTransition>
+              <Suspense fallback={<PageLoader />}><LogoExplain /></Suspense>
+            </PageTransition>
+          } />
         </Routes>
       </AnimatePresence>
     </>
@@ -119,6 +119,17 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <AppContent isMobile={isMobile} />
+    </BrowserRouter>
+  )
+}
+
+function AppContent({ isMobile }: { isMobile: boolean }) {
+  const location = useLocation()
+  const isImmersive = location.pathname === '/' || location.pathname === '/committee'
+
+  return (
+    <>
       <div style={{ minHeight: '100vh', background: '#03030f', position: 'relative' }}>
         {/* Persistent canvas background */}
         <QuantumBackground />
@@ -170,7 +181,7 @@ export default function App() {
         </main>
 
         {/* Footer */}
-        {!isMobile && (
+        {!isMobile && !isImmersive && (
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -196,39 +207,41 @@ export default function App() {
           </motion.div>
         )}
 
-        <footer style={{
-          position: 'relative',
-          zIndex: 1,
-          borderTop: '1px solid rgba(196,181,253,0.06)',
-          padding: '40px 24px',
-          textAlign: 'center',
-        }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 28,
-                height: 28,
-                background: 'linear-gradient(135deg, #7c3aed, #d946ef)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 13,
-                color: '#fff',
-                fontFamily: 'JetBrains Mono',
-                boxShadow: '0 0 10px rgba(124,58,237,0.4)',
-              }}>ψ</div>
-              <span style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 16, color: '#c4b5fd' }}>SoQC</span>
+        {!isImmersive && (
+          <footer style={{
+            position: 'relative',
+            zIndex: 1,
+            borderTop: '1px solid rgba(196,181,253,0.06)',
+            padding: '40px 24px',
+            textAlign: 'center',
+          }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  background: 'linear-gradient(135deg, #7c3aed, #d946ef)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 13,
+                  color: '#fff',
+                  fontFamily: 'JetBrains Mono',
+                  boxShadow: '0 0 10px rgba(124,58,237,0.4)',
+                }}>ψ</div>
+                <span style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 16, color: '#c4b5fd' }}>SoQC</span>
+              </div>
+              <p style={{ fontFamily: 'Inter', fontSize: 12, color: 'rgba(248,248,255,0.25)', letterSpacing: '0.02em' }}>
+                Society of Quantum Computing · {new Date().getFullYear()}
+              </p>
+              <p style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: 'rgba(248,248,255,0.2)', letterSpacing: '0.1em' }}>
+                |ψ⟩ = α|0⟩ + β|1⟩
+              </p>
             </div>
-            <p style={{ fontFamily: 'Inter', fontSize: 12, color: 'rgba(248,248,255,0.25)', letterSpacing: '0.02em' }}>
-              Society of Quantum Computing · {new Date().getFullYear()}
-            </p>
-            <p style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: 'rgba(248,248,255,0.2)', letterSpacing: '0.1em' }}>
-              |ψ⟩ = α|0⟩ + β|1⟩
-            </p>
-          </div>
-        </footer>
+          </footer>
+        )}
       </div>
-    </BrowserRouter>
+    </>
   )
 }
