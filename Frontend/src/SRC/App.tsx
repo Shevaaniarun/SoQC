@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import './App.css'
-import Lightfall from '../3d-animation-idea-components/Light_fall'
+import Lightfall from '../../3d-animation-idea-components/Light_fall'
 
 type SectionKey = 'hero' | 'events' | 'articles' | 'projects' | 'committee' | 'logo'
 

@@ -1,9 +1,10 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import CustomCursor from '../components/CustomCursor'
 import QuantumBackground from '../components/QuantumBackground'
 import Navigation from '../components/Navigation'
+import SoundToggle from '../components/SoundToggle'
 
 const Home = lazy(() => import('../pages/Home'))
 const Events = lazy(() => import('../pages/Events'))
@@ -50,10 +51,26 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 function AnimatedRoutes() {
   const location = useLocation()
+  const { scrollYProgress } = useScroll()
+  const springY = useSpring(scrollYProgress, { stiffness: 120, damping: 24 })
+  const width = useTransform(springY, [0, 1], ['0%', '100%'])
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
+    <>
+      <motion.div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          height: 3,
+          zIndex: 1100,
+          background: 'linear-gradient(90deg, #8b5cf6, #22d3ee)',
+          transformOrigin: 'left center',
+          width,
+        }}
+      />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
         <Route path="/" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}><Home /></Suspense>
@@ -84,12 +101,22 @@ function AnimatedRoutes() {
             <Suspense fallback={<PageLoader />}><LogoExplain /></Suspense>
           </PageTransition>
         } />
-      </Routes>
-    </AnimatePresence>
+        </Routes>
+      </AnimatePresence>
+    </>
   )
 }
 
 export default function App() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
   return (
     <BrowserRouter>
       <div style={{ minHeight: '100vh', background: '#03030f', position: 'relative' }}>
@@ -132,6 +159,9 @@ export default function App() {
         </div>
 
         {/* Navigation */}
+        <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 1100 }}>
+          <SoundToggle />
+        </div>
         <Navigation />
 
         {/* Main content */}
@@ -140,6 +170,32 @@ export default function App() {
         </main>
 
         {/* Footer */}
+        {!isMobile && (
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            style={{
+              position: 'fixed',
+              right: 24,
+              bottom: 24,
+              zIndex: 1090,
+              padding: '10px 12px',
+              borderRadius: 999,
+              border: '1px solid rgba(196,181,253,0.16)',
+              background: 'rgba(7,7,26,0.6)',
+              backdropFilter: 'blur(18px)',
+              color: '#c4b5fd',
+              fontFamily: 'JetBrains Mono',
+              fontSize: 11,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            }}
+          >
+            5173
+          </motion.div>
+        )}
+
         <footer style={{
           position: 'relative',
           zIndex: 1,

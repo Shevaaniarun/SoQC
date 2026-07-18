@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useScroll } from 'framer-motion'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Float, Stars } from '@react-three/drei'
+import { Stars } from '@react-three/drei'
 import * as THREE from 'three'
 
 const logoParts = [
@@ -57,45 +57,6 @@ const logoParts = [
   },
 ]
 
-function FloatingSymbol({ part, exploded }: { part: typeof logoParts[0]; exploded: boolean }) {
-  return (
-    <motion.div
-      animate={exploded ? {
-        x: part.x,
-        y: part.y,
-        rotate: part.rotation,
-        opacity: 1,
-      } : {
-        x: 0,
-        y: 0,
-        rotate: 0,
-        opacity: 1,
-      }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        marginTop: -40,
-        marginLeft: -40,
-        width: 80,
-        height: 80,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 48,
-        color: part.color,
-        textShadow: `0 0 20px ${part.color}80, 0 0 40px ${part.color}40`,
-        cursor: 'default',
-        filter: `drop-shadow(0 0 12px ${part.color}60)`,
-        fontFamily: 'JetBrains Mono',
-      }}
-    >
-      {part.symbol}
-    </motion.div>
-  )
-}
-
 function QuantumOrb() {
   const groupRef = useRef<THREE.Group>(null)
   useFrame(({ clock }) => {
@@ -119,8 +80,7 @@ export default function LogoExplain() {
   const [phase, setPhase] = useState<'assembled' | 'exploded' | 'reassembled'>('assembled')
   const [activePart, setActivePart] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: containerRef })
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.1])
+  useScroll({ target: containerRef })
 
   useEffect(() => {
     const timer = setTimeout(() => setPhase('exploded'), 1000)

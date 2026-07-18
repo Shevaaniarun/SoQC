@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { events } from '../data'
 
 function CountdownTimer({ deadline }: { deadline: string }) {
-  const [time, setTime] = useState(() => {
+  const [time] = useState(() => {
     const diff = new Date(deadline).getTime() - Date.now()
     return diff > 0 ? {
       d: Math.floor(diff / 86400000),

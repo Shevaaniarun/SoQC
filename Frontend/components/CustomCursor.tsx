@@ -60,19 +60,7 @@ export default function CustomCursor() {
         }}
       />
       {/* Trailing ring */}
-      <motion.div
-        className="cursor-dot"
-        style={{
-          left: springX,
-          top: springY,
-          width: 36,
-          height: 36,
-          border: '1px solid rgba(196, 181, 253, 0.5)',
-          borderRadius: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)',
-        }}
-      />
+      
       {/* Glow aura */}
       <motion.div
         className="cursor-dot"

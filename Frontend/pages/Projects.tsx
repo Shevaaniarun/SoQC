@@ -70,7 +70,6 @@ function ArchitectureFlow({ nodes }: { nodes: string[] }) {
 function ProjectCard({ project, index }: { project: typeof projects[0]; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true })
-  const [expanded, setExpanded] = useState(false)
 
   const typeColor = project.type === 'Working' ? '#22d3ee' : project.type === 'Research' ? '#a855f7' : '#c4b5fd'
 
