@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useSpring, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -84,7 +84,7 @@ function SceneLayer({
         top: '50%',
         x: '-50%',
         y: '-50%',
-        z, // controls the translateZ
+        z,
         opacity,
         filter,
         pointerEvents,
@@ -96,6 +96,74 @@ function SceneLayer({
     >
       {children}
     </motion.div>
+  )
+}
+
+/* ─── Stat Card Component ───────────────────────────── */
+function StatCard({ value, label, icon }: { value: number; label: string; icon: string }) {
+  const [count, setCount] = useState(0)
+  const [inView, setInView] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!inView) return
+    let start = 0
+    const step = value / 60
+    const timer = setInterval(() => {
+      start += step
+      if (start >= value) {
+        setCount(value)
+        clearInterval(timer)
+      } else {
+        setCount(Math.floor(start))
+      }
+    }, 16)
+    return () => clearInterval(timer)
+  }, [inView, value])
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        background: 'rgba(124,58,237,0.06)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(196,181,253,0.12)',
+        borderRadius: 16,
+        padding: '28px 32px',
+        textAlign: 'center',
+        cursor: 'default',
+        transition: 'box-shadow 0.3s ease',
+      }}
+    >
+      <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
+      <div style={{
+        fontFamily: 'Outfit',
+        fontSize: 48,
+        fontWeight: 800,
+        background: 'linear-gradient(135deg, #c4b5fd, #a855f7)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        lineHeight: 1,
+      }}>{count}+</div>
+      <div style={{ color: 'rgba(248,248,255,0.5)', fontSize: 14, marginTop: 8, fontFamily: 'Inter', letterSpacing: '0.05em' }}>
+        {label}
+      </div>
+    </div>
   )
 }
 
@@ -113,7 +181,7 @@ export default function Home() {
   useEffect(() => {
     document.body.style.overflow = 'hidden'
 
-    const maxScroll = 8800 // beyond logo Z
+    const maxScroll = 8800
 
     const onWheel = (e: WheelEvent) => {
       vScrollTarget.current += e.deltaY * 0.9
@@ -145,45 +213,29 @@ export default function Home() {
     }
   }, [vScroll])
 
-  const upcomingEvents = events.filter((event) => event.status === 'upcoming').slice(0, 2)
-  const recentArticles = articles.slice(0, 2)
+  const upcomingEvents = events.filter((event) => event.status === 'upcoming').slice(0, 3)
+  const recentArticles = articles.slice(0, 3)
 
   const scenes = [
     {
-      title: 'Signals flowing through the lab',
-      eyebrow: 'Live pulses',
-      body: 'Upcoming workshops and events appear like floating beacons as the camera glides deeper into the experience.',
-      accent: '#22d3ee',
-      link: '/events',
-      cta: 'See events',
+      type: 'stats',
       z: -1200,
     },
     {
-      title: 'Knowledge drifting in the void',
-      eyebrow: 'Articles',
-      body: 'Thoughtful stories and concepts emerge from the distance, carried by subtle motion and depth.',
-      accent: '#c084fc',
-      link: '/articles',
-      cta: 'Open articles',
+      type: 'events',
       z: -2400,
     },
     {
-      title: 'Research architectures unfolding',
-      eyebrow: 'Projects',
-      body: 'Each project surfaces as a luminous node in a larger quantum constellation.',
-      accent: '#8b5cf6',
-      link: '/projects',
-      cta: 'Meet the work',
+      type: 'articles',
       z: -3600,
     },
     {
-      title: 'The people at the core',
-      eyebrow: 'Committee',
-      body: 'The committee page becomes its own helix structure — a living chamber of motion and presence.',
-      accent: '#d946ef',
-      link: '/committee',
-      cta: 'Enter the helix',
+      type: 'whatsapp',
       z: -4800,
+    },
+    {
+      type: 'navigation',
+      z: -6000,
     },
   ]
 
@@ -204,7 +256,6 @@ export default function Home() {
         transformStyle: 'preserve-3d',
       }}>
 
-        {/* Dynamic camera tilt wrapper giving 3D mouse parallax to entire volume */}
         <motion.div style={{
           width: '100%',
           height: '100%',
@@ -215,13 +266,24 @@ export default function Home() {
 
           {/* ═══════════ HERO (Z=0) ═══════════ */}
           <SceneLayer baseZ={0} vScroll={vScroll}>
-            {/* 3D Canvas sphere container */}
             <div style={{ position: 'absolute', width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none' }}>
               <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
                 <Stars radius={90} depth={60} count={2800} factor={3} fade speed={0.45} />
                 <QuantumSphere />
               </Canvas>
             </div>
+
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 600,
+              height: 600,
+              background: 'radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }} />
 
             <div style={{
               position: 'relative',
@@ -233,126 +295,138 @@ export default function Home() {
               flexDirection: 'column',
               alignItems: 'center',
             }}>
+              {/* Badge */}
               <div style={{
-                fontFamily: 'JetBrains Mono',
-                color: '#a855f7',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '6px 16px',
+                background: 'rgba(124,58,237,0.15)',
+                border: '1px solid rgba(196,181,253,0.2)',
+                borderRadius: 100,
+                marginBottom: 32,
                 fontSize: 12,
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                marginBottom: 24,
-                textShadow: '0 0 20px rgba(168,85,247,0.4)',
+                color: '#c4b5fd',
+                fontFamily: 'JetBrains Mono',
+                letterSpacing: '0.1em',
               }}>
-                SoQC • Quantum Exploration
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 6px #a855f7', display: 'inline-block' }} />
+                Society of Quantum Computing — Est. 2023
               </div>
+
+              {/* Main title */}
               <h1 style={{
                 fontFamily: 'Outfit',
-                fontSize: 'clamp(44px, 7vw, 84px)',
-                fontWeight: 800,
-                lineHeight: 1.02,
+                fontSize: 'clamp(52px, 10vw, 120px)',
+                fontWeight: 900,
+                lineHeight: 0.9,
+                letterSpacing: '-0.04em',
                 marginBottom: 24,
-                background: 'linear-gradient(135deg, #fff 0%, #c4b5fd 40%, #a855f7 70%, #d946ef 100%)',
+                background: 'linear-gradient(135deg, #ffffff 0%, #c4b5fd 30%, #a855f7 60%, #7c3aed 80%, #d946ef 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
+                backgroundSize: '200% 200%',
               }}>
-                Entering the quantum horizon
+                SoQC
               </h1>
+
               <p style={{
-                fontFamily: 'Inter',
+                fontFamily: 'Outfit',
+                fontSize: 'clamp(16px, 3vw, 22px)',
                 color: 'rgba(248,248,255,0.7)',
-                fontSize: 18,
-                lineHeight: 1.8,
                 maxWidth: 600,
-                marginBottom: 40,
+                margin: '0 auto 16px',
+                fontWeight: 300,
+                letterSpacing: '0.01em',
+                lineHeight: 1.5,
               }}>
-                Scroll to effortlessly fly inward. The lab expands dynamically as you travel along the Z-axis, dissolving conventional layouts into deep space.
+                Exploring the quantum frontier
               </p>
 
-              <div style={{
-                width: 24,
-                height: 40,
-                borderRadius: 12,
-                border: '2px solid rgba(196,181,253,0.3)',
-                display: 'flex',
-                justifyContent: 'center',
-                paddingTop: 8,
+              <p style={{
+                fontFamily: 'Inter',
+                fontSize: 15,
+                color: 'rgba(248,248,255,0.4)',
+                maxWidth: 500,
+                margin: '0 auto 48px',
+                lineHeight: 1.7,
               }}>
-                <motion.div
-                  animate={{ opacity: [0.3, 1, 0.3], y: [0, 12, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  style={{ width: 3, height: 8, borderRadius: 2, background: '#c4b5fd' }}
-                />
+                Where quantum mechanics meets computation. We research, build, and teach
+                the technologies that will define the next era of information processing.
+              </p>
+
+              {/* CTAs */}
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link to="/events" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '14px 32px',
+                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                  border: 'none',
+                  borderRadius: 12,
+                  color: '#fff',
+                  fontFamily: 'Outfit',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  boxShadow: '0 0 30px rgba(124,58,237,0.4)',
+                }}>
+                  Explore Events
+                  <span>→</span>
+                </Link>
+                <Link to="/projects" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '14px 32px',
+                  background: 'rgba(124,58,237,0.1)',
+                  border: '1px solid rgba(196,181,253,0.2)',
+                  borderRadius: 12,
+                  color: '#c4b5fd',
+                  fontFamily: 'Outfit',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  backdropFilter: 'blur(10px)',
+                }}>
+                  View Research
+                </Link>
+              </div>
+
+              {/* Scroll indicator */}
+              <div style={{ marginTop: 64 }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 8,
+                  color: 'rgba(196,181,253,0.5)',
+                  fontSize: 11,
+                  letterSpacing: '0.2em',
+                  fontFamily: 'JetBrains Mono',
+                  textTransform: 'uppercase',
+                }}>
+                  <span>Scroll to explore</span>
+                  <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{
+                      width: 1,
+                      height: 40,
+                      background: 'linear-gradient(to bottom, rgba(196,181,253,0.5), transparent)',
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </SceneLayer>
 
-          {/* ═══════════ DYNAMIC SCENE CARDS ═══════════ */}
-          {scenes.map((scene) => (
-            <SceneLayer key={scene.title} baseZ={scene.z} vScroll={vScroll}>
-              <div style={{
-                width: 'min(920px, 90vw)',
-                borderRadius: 32,
-                padding: '48px 40px',
-                background: 'rgba(7, 7, 30, 0.45)', // more transparent for depth effect
-                backdropFilter: 'blur(34px)',
-                WebkitBackdropFilter: 'blur(34px)',
-                border: `1px solid ${scene.accent}30`,
-                boxShadow: `0 0 100px ${scene.accent}15, inset 0 0 40px ${scene.accent}10`,
-                textAlign: 'left',
-              }}>
-                <div style={{
-                  fontFamily: 'JetBrains Mono',
-                  color: scene.accent,
-                  fontSize: 12,
-                  letterSpacing: '0.22em',
-                  textTransform: 'uppercase',
-                  marginBottom: 16,
-                  textShadow: `0 0 15px ${scene.accent}40`,
-                }}>
-                  {scene.eyebrow}
-                </div>
-                <h2 style={{
-                  fontFamily: 'Outfit',
-                  fontSize: 'clamp(32px, 5vw, 56px)',
-                  fontWeight: 800,
-                  color: '#fff',
-                  marginBottom: 20,
-                  lineHeight: 1.05,
-                }}>
-                  {scene.title}
-                </h2>
-                <p style={{
-                  fontFamily: 'Inter',
-                  color: 'rgba(248,248,255,0.7)',
-                  fontSize: 16,
-                  lineHeight: 1.8,
-                  maxWidth: 620,
-                  marginBottom: 32,
-                }}>
-                  {scene.body}
-                </p>
-                <Link to={scene.link} style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '14px 28px',
-                  color: '#fff',
-                  borderRadius: 999,
-                  background: `linear-gradient(135deg, ${scene.accent}, #a855f7)`,
-                  textDecoration: 'none',
-                  fontFamily: 'Outfit',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  boxShadow: `0 4px 30px ${scene.accent}50`,
-                }}>
-                  {scene.cta} <span style={{ fontSize: 18 }}>→</span>
-                </Link>
-              </div>
-            </SceneLayer>
-          ))}
-
-          {/* ═══════════ SIGNAL TRAILS (Z=-6000) ═══════════ */}
-          <SceneLayer baseZ={-6000} vScroll={vScroll}>
+          {/* ═══════════ STATS DASHBOARD (Z=-1200) ═══════════ */}
+          <SceneLayer baseZ={-1200} vScroll={vScroll}>
             <div style={{ width: 'min(1100px, 90vw)' }}>
               <div style={{
                 fontFamily: 'JetBrains Mono',
@@ -360,44 +434,311 @@ export default function Home() {
                 fontSize: 12,
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
-                marginBottom: 24,
+                marginBottom: 16,
                 textAlign: 'center',
               }}>
-                Signal trails
+                By the numbers
               </div>
-              <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
-                <div style={{
-                  borderRadius: 24,
-                  padding: 32,
-                  background: 'rgba(7, 7, 26, 0.55)',
-                  backdropFilter: 'blur(24px)',
-                  border: '1px solid rgba(196,181,253,0.15)',
-                  boxShadow: '0 4px 40px rgba(0,0,0,0.3)',
-                }}>
-                  <h3 style={{ fontFamily: 'Outfit', fontSize: 24, color: '#fff', marginBottom: 20, fontWeight: 700 }}>Upcoming pulses</h3>
-                  {upcomingEvents.map((event) => (
-                    <div key={event.id} style={{ padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{event.category}</div>
-                      <div style={{ fontFamily: 'Inter', color: 'rgba(248,248,255,0.75)', fontSize: 15, lineHeight: 1.5 }}>{event.title}</div>
-                    </div>
-                  ))}
+              <h2 style={{
+                fontFamily: 'Outfit',
+                fontSize: 'clamp(36px, 5vw, 56px)',
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, #fff, #c4b5fd)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                letterSpacing: '-0.03em',
+                textAlign: 'center',
+                marginBottom: 48,
+              }}>
+                Quantum Impact
+              </h2>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 20,
+                marginBottom: 48,
+              }}>
+                <StatCard value={12} label="Events Organized" icon="◈" />
+                <StatCard value={8} label="Articles Published" icon="∂" />
+                <StatCard value={6} label="Active Projects" icon="⬡" />
+                <StatCard value={3} label="Research Papers" icon="∞" />
+              </div>
+            </div>
+          </SceneLayer>
+
+          {/* ═══════════ UPCOMING EVENTS (Z=-2400) ═══════════ */}
+          <SceneLayer baseZ={-2400} vScroll={vScroll}>
+            <div style={{ width: 'min(1100px, 90vw)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+                <div>
+                  <div style={{
+                    fontFamily: 'JetBrains Mono',
+                    color: '#22d3ee',
+                    fontSize: 12,
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    marginBottom: 12,
+                  }}>
+                    Coming up
+                  </div>
+                  <h2 style={{
+                    fontFamily: 'Outfit',
+                    fontSize: 'clamp(32px, 4vw, 48px)',
+                    fontWeight: 800,
+                    background: 'linear-gradient(135deg, #fff, #c4b5fd)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    letterSpacing: '-0.02em',
+                  }}>
+                    Upcoming Events
+                  </h2>
                 </div>
-                <div style={{
-                  borderRadius: 24,
-                  padding: 32,
-                  background: 'rgba(7, 7, 26, 0.55)',
-                  backdropFilter: 'blur(24px)',
-                  border: '1px solid rgba(196,181,253,0.15)',
-                  boxShadow: '0 4px 40px rgba(0,0,0,0.3)',
-                }}>
-                  <h3 style={{ fontFamily: 'Outfit', fontSize: 24, color: '#fff', marginBottom: 20, fontWeight: 700 }}>Fresh knowledge</h3>
-                  {recentArticles.map((article) => (
-                    <div key={article.id} style={{ padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{article.category}</div>
-                      <div style={{ fontFamily: 'Inter', color: 'rgba(248,248,255,0.75)', fontSize: 15, lineHeight: 1.5 }}>{article.title}</div>
+                <Link to="/events" style={{
+                  color: '#c4b5fd',
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}>View all →</Link>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+                {upcomingEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      background: 'rgba(124,58,237,0.06)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(196,181,253,0.1)',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'box-shadow 0.3s ease',
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    <div style={{ height: 180, overflow: 'hidden', position: 'relative' }}>
+                      <img src={event.image} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to bottom, transparent 50%, rgba(3,3,15,0.9))',
+                      }} />
+                      <div style={{
+                        position: 'absolute',
+                        top: 12,
+                        left: 12,
+                        padding: '4px 12px',
+                        background: 'rgba(124,58,237,0.7)',
+                        borderRadius: 100,
+                        fontSize: 11,
+                        color: '#fff',
+                        fontFamily: 'JetBrains Mono',
+                        letterSpacing: '0.05em',
+                      }}>
+                        {event.category}
+                      </div>
                     </div>
-                  ))}
+                    <div style={{ padding: '20px 24px' }}>
+                      <h3 style={{ fontFamily: 'Outfit', fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+                        {event.title}
+                      </h3>
+                      <p style={{ color: 'rgba(248,248,255,0.5)', fontSize: 13, fontFamily: 'Inter', marginBottom: 16, lineHeight: 1.6 }}>
+                        {event.description.slice(0, 80)}...
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#c4b5fd', fontFamily: 'JetBrains Mono', fontSize: 12 }}>
+                          {new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <Link to="/events" style={{
+                          padding: '6px 16px',
+                          background: 'rgba(124,58,237,0.2)',
+                          border: '1px solid rgba(196,181,253,0.2)',
+                          borderRadius: 8,
+                          color: '#c4b5fd',
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          textDecoration: 'none',
+                        }}>
+                          Register →
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </SceneLayer>
+
+          {/* ═══════════ RECENT ARTICLES (Z=-3600) ═══════════ */}
+          <SceneLayer baseZ={-3600} vScroll={vScroll}>
+            <div style={{ width: 'min(1100px, 90vw)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+                <div>
+                  <div style={{
+                    fontFamily: 'JetBrains Mono',
+                    color: '#c084fc',
+                    fontSize: 12,
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    marginBottom: 12,
+                  }}>
+                    Knowledge base
+                  </div>
+                  <h2 style={{
+                    fontFamily: 'Outfit',
+                    fontSize: 'clamp(32px, 4vw, 48px)',
+                    fontWeight: 800,
+                    background: 'linear-gradient(135deg, #fff, #c4b5fd)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    letterSpacing: '-0.02em',
+                  }}>
+                    Latest Articles
+                  </h2>
                 </div>
+                <Link to="/articles" style={{ color: '#c4b5fd', fontFamily: 'Inter', fontSize: 14, textDecoration: 'none' }}>
+                  View all →
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {recentArticles.map((article) => (
+                  <div
+                    key={article.id}
+                    style={{
+                      background: 'rgba(124,58,237,0.04)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(196,181,253,0.08)',
+                      borderRadius: 16,
+                      padding: '24px',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto',
+                      gap: 24,
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                        <span style={{ padding: '2px 10px', background: 'rgba(124,58,237,0.2)', borderRadius: 100, fontSize: 11, color: '#c4b5fd', fontFamily: 'JetBrains Mono' }}>
+                          {article.category}
+                        </span>
+                        <span style={{ color: 'rgba(248,248,255,0.3)', fontSize: 11, fontFamily: 'JetBrains Mono', display: 'flex', alignItems: 'center' }}>
+                          {article.readTime}
+                        </span>
+                      </div>
+                      <h3 style={{ fontFamily: 'Outfit', fontSize: 20, fontWeight: 600, color: '#fff', marginBottom: 8 }}>
+                        {article.title}
+                      </h3>
+                      <p style={{ color: 'rgba(248,248,255,0.45)', fontSize: 13, fontFamily: 'Inter', lineHeight: 1.6 }}>
+                        {article.excerpt.slice(0, 100)}...
+                      </p>
+                    </div>
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </SceneLayer>
+
+          {/* ═══════════ WHATSAPP BANNER (Z=-4800) ═══════════ */}
+          <SceneLayer baseZ={-4800} vScroll={vScroll}>
+            <div style={{ width: 'min(900px, 90vw)' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(37,211,102,0.08), rgba(124,58,237,0.08))',
+                border: '1px solid rgba(37,211,102,0.2)',
+                borderRadius: 20,
+                padding: '40px 48px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 24,
+                flexWrap: 'wrap',
+              }}>
+                <div>
+                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: 'rgba(37,211,102,0.7)', letterSpacing: '0.15em', marginBottom: 8, textTransform: 'uppercase' }}>
+                    WhatsApp Community
+                  </div>
+                  <h3 style={{ fontFamily: 'Outfit', fontSize: 28, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+                    Join 500+ Quantum Enthusiasts
+                  </h3>
+                  <p style={{ color: 'rgba(248,248,255,0.5)', fontSize: 14, fontFamily: 'Inter' }}>
+                    Stay updated with events, discussions, resources and more.
+                  </p>
+                </div>
+                <a
+                  href="https://chat.whatsapp.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    padding: '14px 32px',
+                    background: 'linear-gradient(135deg, #25d366, #128c7e)',
+                    borderRadius: 12,
+                    color: '#fff',
+                    fontFamily: 'Outfit',
+                    fontWeight: 600,
+                    fontSize: 16,
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  Join Now →
+                </a>
+              </div>
+            </div>
+          </SceneLayer>
+
+          {/* ═══════════ QUICK NAVIGATION (Z=-6000) ═══════════ */}
+          <SceneLayer baseZ={-6000} vScroll={vScroll}>
+            <div style={{ width: 'min(1000px, 90vw)' }}>
+              <h2 style={{
+                fontFamily: 'Outfit',
+                fontSize: 'clamp(32px, 4vw, 48px)',
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, #fff, #c4b5fd)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textAlign: 'center',
+                marginBottom: 40,
+              }}>Explore SoQC</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                {[
+                  { to: '/events', label: 'Events', desc: 'Workshops & seminars', icon: '◈', color: '#7c3aed' },
+                  { to: '/articles', label: 'Articles', desc: 'Quantum knowledge', icon: '∂', color: '#a855f7' },
+                  { to: '/projects', label: 'Projects', desc: 'Research & builds', icon: '⬡', color: '#c4b5fd' },
+                  { to: '/committee', label: 'Committee', desc: 'Meet the team', icon: '◉', color: '#d946ef' },
+                  { to: '/logo', label: 'Our Logo', desc: 'The story behind it', icon: '∞', color: '#8b5cf6' },
+                ].map((item) => (
+                  <Link to={item.to} key={item.to} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      background: 'rgba(124,58,237,0.06)',
+                      border: '1px solid rgba(196,181,253,0.1)',
+                      borderRadius: 16,
+                      padding: '28px 20px',
+                      textAlign: 'center',
+                      transition: 'all 0.3s ease',
+                    }}>
+                      <div style={{ fontSize: 32, marginBottom: 12, color: item.color }}>{item.icon}</div>
+                      <div style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 18, color: '#fff', marginBottom: 6 }}>{item.label}</div>
+                      <div style={{ fontFamily: 'Inter', fontSize: 12, color: 'rgba(248,248,255,0.4)' }}>{item.desc}</div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </SceneLayer>
