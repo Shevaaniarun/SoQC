@@ -25,94 +25,122 @@ const members = [
 function HelixCard({
   member,
   index,
+  totalItems,
   time,
   vScroll,
   onSelect,
 }: {
   member: Member
   index: number
+  totalItems: number
   time: any
   vScroll: any
   onSelect: (m: Member) => void
 }) {
-  const pointer = useMousePosition() // For subtle interactive tilt
-  const ptrX = pointer.x === -999 ? window.innerWidth / 2 : pointer.x
-  const ptrY = pointer.y === -999 ? window.innerHeight / 2 : pointer.y
+  const pointer = useMousePosition()
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 })
 
-  const cx = window.innerWidth / 2
-  const cy = window.innerHeight / 2
+  useEffect(() => {
+    setDimensions({ width: window.innerWidth, height: window.innerHeight })
+    const handleResize = () => setDimensions({ width: window.innerWidth, height: window.innerHeight })
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const ptrX = pointer.x === -999 ? dimensions.width / 2 : pointer.x
+  const ptrY = pointer.y === -999 ? dimensions.height / 2 : pointer.y
+
+  const cx = dimensions.width / 2
+  const cy = dimensions.height / 2
   const tiltX = (cy - ptrY) * 0.04
   const tiltY = (ptrX - cx) * 0.04
 
-  // Helix math constants
-  const angleSpacing = (Math.PI * 2) / 6 // 6 items per revolution
-  const cylinderRadius = window.innerWidth < 768 ? 260 : 420
-  const ySpacing = 160
-  const zOffset = -150
-  const startYOffset = window.innerHeight * 0.6 // start cards slightly lower
+  // --- Optimized Helix Constants ---
+  const itemsPerRevolution = 7
+  const angleSpacing = (Math.PI * 2) / itemsPerRevolution
+  const cylinderRadius = dimensions.width < 768 ? 240 : 450
+  const ySpacing = 220
+  const zOffset = -200
+  const startYOffset = dimensions.height * 0.45
 
-  const styleTransform = useTransform(() => {
+  // Total height block occupied by one full iteration loop
+  const totalLoopHeight = totalItems * ySpacing
+
+  // Helper mapping shared across derivations to keep spatial math perfectly synchronized
+  const getLoopState = () => {
     const t = time.get()
     const s = vScroll.get()
-    const scrollAngle = s * 0.003
 
-    const angle = index * angleSpacing + t + scrollAngle
+    // Map raw vertical tracking space directly to the angle
+    const scrollAngle = s * 0.0035
+
+    // Calculate current un-looped Y coordinate relative to the camera center viewport point
+    let relativeY = index * ySpacing - s + startYOffset
+
+    // Infinite Loop Math logic: 
+    // Shift cards vertically back up or down if they move too far off screen limits
+    const halfLoop = totalLoopHeight / 2
+    relativeY = ((relativeY - startYOffset + halfLoop) % totalLoopHeight) 
+    if (relativeY < 0) relativeY += totalLoopHeight
+    const finalY = relativeY - halfLoop + startYOffset
+
+    // Deduce what virtual offset scale index we are currently occupying in the loop sequence
+    const virtualIndex = (finalY - startYOffset + s) / ySpacing
+    const angle = virtualIndex * angleSpacing + t + scrollAngle
+
+    return { angle, y: finalY }
+  }
+
+  const styleTransform = useTransform(() => {
+    const { angle, y } = getLoopState()
+    
     const x = Math.sin(angle) * cylinderRadius
     const rawZ = Math.cos(angle) * cylinderRadius
     const z = rawZ + zOffset
-
-    // Cards move UP as we scroll DOWN (so scroll moves camera down)
-    // Actually, user scrolls down to move forward/upward through the helix
-    const y = index * ySpacing - s + startYOffset
-
-    // Facing the camera
     const facing = -Math.atan2(x, rawZ)
 
-    // Scale up when in front
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    const scale = 0.8 + Math.pow(focus, 3) * 0.35 // non-linear scale for punchiness
+    const scale = 0.75 + Math.pow(focus, 3) * 0.4
 
     return `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, ${z}px) rotateY(${facing}rad) scale(${scale})`
   })
 
-  // Dynamic derivations based on depth/focus
   const styleOpacity = useTransform(() => {
-    const angle = index * angleSpacing + time.get() + vScroll.get() * 0.003
+    const { angle } = getLoopState()
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    return 0.15 + Math.pow(focus, 2) * 0.85
+    return 0.08 + Math.pow(focus, 2) * 0.92
   })
 
   const styleFilter = useTransform(() => {
-    const angle = index * angleSpacing + time.get() + vScroll.get() * 0.003
+    const { angle } = getLoopState()
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    return `saturate(${0.5 + focus * 0.7}) blur(${focus < 0.6 ? 4 : 0}px)`
+    return `saturate(${0.4 + focus * 0.8}) blur(${focus < 0.55 ? 5 : 0}px)`
   })
 
   const styleZIndex = useTransform(() => {
-    const angle = index * angleSpacing + time.get() + vScroll.get() * 0.003
+    const { angle } = getLoopState()
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    return Math.round(focus * 100)
+    return Math.round(focus * 200)
   })
 
   const styleBoxShadow = useTransform(() => {
-    const angle = index * angleSpacing + time.get() + vScroll.get() * 0.003
+    const { angle } = getLoopState()
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    if (focus > 0.96) return '0 0 50px rgba(167, 139, 250, 0.45), inset 0 0 20px rgba(124, 58, 237, 0.25)'
+    if (focus > 0.94) return '0 0 50px rgba(167, 139, 250, 0.45), inset 0 0 20px rgba(124, 58, 237, 0.25)'
     if (focus > 0.6) return '0 0 30px rgba(167, 139, 250, 0.15)'
     return 'none'
   })
 
   const styleBorder = useTransform(() => {
-    const angle = index * angleSpacing + time.get() + vScroll.get() * 0.003
+    const { angle } = getLoopState()
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    return `1px solid ${focus > 0.9 ? 'rgba(196,181,253,0.5)' : focus > 0.6 ? 'rgba(196,181,253,0.25)' : 'rgba(255,255,255,0.06)'}`
+    return `1px solid ${focus > 0.88 ? 'rgba(196,181,253,0.5)' : focus > 0.6 ? 'rgba(196,181,253,0.2)' : 'rgba(255,255,255,0.04)'}`
   })
 
-  // Reveal designation cleanly only at the front
   const designationOpacity = useTransform(() => {
-    const angle = index * angleSpacing + time.get() + vScroll.get() * 0.003
+    const { angle } = getLoopState()
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2))
-    return focus > 0.9 ? (focus - 0.9) / 0.1 : 0
+    return focus > 0.85 ? (focus - 0.85) / 0.15 : 0
   })
 
   return (
@@ -121,8 +149,8 @@ function HelixCard({
       style={{
         position: 'absolute',
         left: '50%',
-        top: 0, // Using top:0 and deriving full Y inside translate3d for correctness
-        width: 280, // slightly wider for breathing room
+        top: 0,
+        width: 290,
         padding: 0,
         border: 'none',
         background: 'transparent',
@@ -135,11 +163,11 @@ function HelixCard({
       }}
     >
       <motion.div
-        whileHover={{ scale: 1.04, y: -6 }}
+        whileHover={{ scale: 1.03, y: -4 }}
         style={{
           borderRadius: 24,
           padding: '24px',
-          background: 'rgba(7, 7, 26, 0.68)',
+          background: 'rgba(7, 7, 26, 0.72)',
           backdropFilter: 'blur(20px)',
           border: styleBorder,
           boxShadow: styleBoxShadow,
@@ -170,7 +198,7 @@ function HelixCard({
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               marginTop: 4,
-              opacity: designationOpacity, // reveals when at front
+              opacity: designationOpacity,
             }}>
               {member.role}
             </motion.div>
@@ -181,7 +209,7 @@ function HelixCard({
           fontSize: 13,
           color: 'rgba(248,248,255,0.6)',
           lineHeight: 1.6,
-          opacity: designationOpacity, // fade in details too
+          opacity: designationOpacity,
         }}>
           {member.dept}
           {member.year ? ` · ${member.year}` : ''}
@@ -194,24 +222,20 @@ function HelixCard({
 export default function Committee() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
 
-  // Virtual Scroll State
   const time = useMotionValue(0)
   const vScrollTarget = useRef(0)
-  const vScroll = useSpring(0, { stiffness: 60, damping: 25, mass: 1.2 })
+  
+  // Increased stiffness and mass mapping for snappier, quicker scroll responses
+  const vScroll = useSpring(0, { stiffness: 95, damping: 24, mass: 1.0 })
 
-  // Background overlay opacity based on scroll
-  const headerOpacity = useTransform(vScroll, [0, 800], [1, 0])
+  const headerOpacity = useTransform(vScroll, [0, 450], [1, 0])
 
   useEffect(() => {
-    // Lock native scrolling natively and gracefully
     document.body.style.overflow = 'hidden'
 
-    const maxScroll = members.length * 160 + 600
-
     const onWheel = (e: WheelEvent) => {
-      // Delta mapping for natural feel. Normalize a bit depending on device.
-      vScrollTarget.current += (e.deltaY * 0.8)
-      vScrollTarget.current = Math.max(0, Math.min(vScrollTarget.current, maxScroll))
+      // Increased scaling factor (1.2) for faster scrolling translation speed
+      vScrollTarget.current += (e.deltaY * 1.2)
       vScroll.set(vScrollTarget.current)
     }
 
@@ -222,18 +246,16 @@ export default function Committee() {
     const onTouchMove = (e: TouchEvent) => {
       const delta = lastY - e.touches[0].clientY
       lastY = e.touches[0].clientY
-      vScrollTarget.current += (delta * 1.5)
-      vScrollTarget.current = Math.max(0, Math.min(vScrollTarget.current, maxScroll))
+      vScrollTarget.current += (delta * 2.2)
       vScroll.set(vScrollTarget.current)
     }
 
-    // Must use { passive: false } if calling preventDefault, but we just lock the body so we don't need it.
     window.addEventListener('wheel', onWheel, { passive: true })
     window.addEventListener('touchstart', onTouchStart, { passive: true })
     window.addEventListener('touchmove', onTouchMove, { passive: true })
 
     return () => {
-      document.body.style.overflow = 'auto' // Restore strictly on unmount
+      document.body.style.overflow = 'auto'
       window.removeEventListener('wheel', onWheel)
       window.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('touchmove', onTouchMove)
@@ -241,8 +263,8 @@ export default function Committee() {
   }, [vScroll])
 
   useAnimationFrame((_, delta: number) => {
-    // Elegant continuous helix rotation even when not scrolling
-    time.set(time.get() + delta * 0.00015)
+    // Increased ambient drift speed slightly (from 0.00015 to 0.00025)
+    time.set(time.get() + delta * 0.00025)
   })
 
   return (
@@ -253,7 +275,7 @@ export default function Committee() {
       height: '100vh',
       overflow: 'hidden',
       background: 'radial-gradient(circle at center, rgba(124,58,237,0.12), transparent 60%), linear-gradient(180deg, #03030a 0%, #060611 100%)',
-      zIndex: 1, // Base layer for proper stacking
+      zIndex: 1,
     }}>
       <div style={{
         position: 'absolute',
@@ -313,7 +335,7 @@ export default function Committee() {
           ))}
         </div>
 
-        {/* Cinematic Header Text that fades out as you dive */}
+        {/* Cinematic Header Text */}
         <motion.div
           style={{
             position: 'absolute',
@@ -353,7 +375,7 @@ export default function Committee() {
               lineHeight: 1.8,
               color: 'rgba(248,248,255,0.7)',
             }}>
-              Scroll to physically travel down into the quantum spiral. Elements will react dynamically as they pass through the viewport focus.
+              Scroll to physically travel down into the quantum spiral. Elements will loop seamlessly as you travel infinitely through the viewports.
             </p>
           </div>
         </motion.div>
@@ -362,9 +384,10 @@ export default function Committee() {
         <div style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d' }}>
           {members.map((member, index) => (
             <HelixCard
-              key={member.name}
+              key={`${member.name}-${index}`}
               member={member}
               index={index}
+              totalItems={members.length}
               time={time}
               vScroll={vScroll}
               onSelect={setSelectedMember}
@@ -390,7 +413,7 @@ export default function Committee() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: 24,
-                cursor: 'pointer', // signify click outside to close
+                cursor: 'pointer',
               }}
             >
               <motion.div
