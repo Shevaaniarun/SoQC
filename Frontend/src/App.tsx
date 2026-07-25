@@ -4,7 +4,6 @@ import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'fra
 import CustomCursor from '../components/CustomCursor'
 import QuantumBackground from '../components/QuantumBackground'
 import Navigation from '../components/Navigation'
-import QuantumIntro from '../components/QuantumIntro'
 import SoundToggle from '../components/SoundToggle'
 
 const Home = lazy(() => import('../pages/Home'))
@@ -131,7 +130,6 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
 
   return (
     <>
-      <QuantumIntro />
       <div style={{ minHeight: '100vh', background: '#03030f', position: 'relative' }}>
         {/* Persistent canvas background */}
         <QuantumBackground />
