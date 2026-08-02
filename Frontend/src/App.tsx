@@ -6,9 +6,15 @@ import QuantumBackground from '../components/QuantumBackground'
 import Navigation from '../components/Navigation'
 import SoundToggle from '../components/SoundToggle'
 
+// 1. IMPORT YOUR INITIAL ARTICLES DATA
+// (Adjust this import path if your data file is located elsewhere, e.g., '../data/articles')
+import { articles as initialArticles } from '../data' 
+
 const Home = lazy(() => import("../pages/Home"));
 const Events = lazy(() => import("../pages/Events"));
 const Articles = lazy(() => import("../pages/Articles"));
+const ArticleDetail = lazy(() => import("../pages/ArticleDetail"));
+const CreateArticle = lazy(() => import("../pages/CreateArticle"));
 const Projects = lazy(() => import("../pages/Projects"));
 const Committee = lazy(() => import("../pages/Committee"));
 const LogoExplain = lazy(() => import("../pages/LogoExplain"));
@@ -51,7 +57,13 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AnimatedRoutes() {
+// 2. ACCEPT PROPS IN AnimatedRoutes
+interface AnimatedRoutesProps {
+  articles: any[]
+  onArticleCreated: (newArticle: any) => void
+}
+
+function AnimatedRoutes({ articles, onArticleCreated }: AnimatedRoutesProps) {
   const location = useLocation();
   const { scrollYProgress } = useScroll();
   const springY = useSpring(scrollYProgress, { stiffness: 120, damping: 24 });
@@ -93,16 +105,43 @@ function AnimatedRoutes() {
               </PageTransition>
             }
           />
+          
+          {/* MAIN ARTICLES ROUTE - PASS ARTICLES STATE */}
           <Route
             path="/articles"
             element={
               <PageTransition>
                 <Suspense fallback={<PageLoader />}>
-                  <Articles />
+                  <Articles articlesData={articles} />
                 </Suspense>
               </PageTransition>
             }
           />
+
+          {/* CREATE ARTICLE ROUTE - PASS CREATION HANDLER */}
+          <Route
+            path="/articles/new"
+            element={
+              <PageTransition>
+                <Suspense fallback={<PageLoader />}>
+                  <CreateArticle onArticleCreated={onArticleCreated} />
+                </Suspense>
+              </PageTransition>
+            }
+          />
+
+          {/* INDIVIDUAL ARTICLE READER ROUTE - PASS ARTICLES TO FIND BY ID */}
+          <Route
+            path="/articles/:id"
+            element={
+              <PageTransition>
+                <Suspense fallback={<PageLoader />}>
+                  <ArticleDetail articlesData={articles} />
+                </Suspense>
+              </PageTransition>
+            }
+          />
+
           <Route
             path="/projects"
             element={
@@ -161,16 +200,20 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
   const isImmersive =
     location.pathname === "/" || location.pathname === "/committee";
 
+  // 3. CREATE ARTICLES STATE IN APP CONTENT
+  const [articles, setArticles] = useState(initialArticles);
+
+  const handleAddArticle = (newArticle: any) => {
+    setArticles((prevArticles) => [newArticle, ...prevArticles]);
+  };
+
   return (
     <>
       <div style={{ minHeight: '100vh', background: '#03030f', position: 'relative' }}>
-        {/* Persistent canvas background */}
         <QuantumBackground />
-
-        {/* Custom cursor (desktop only) */}
         <CustomCursor />
 
-        {/* Noise texture overlay */}
+        {/* Noise overlay */}
         <div
           style={{
             position: "fixed",
@@ -224,9 +267,9 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
         </div>
         <Navigation />
 
-        {/* Main content */}
+        {/* Main content - PASS PROPS TO ANIMATED ROUTES */}
         <main style={{ position: "relative", zIndex: 1, minHeight: "100vh" }}>
-          <AnimatedRoutes />
+          <AnimatedRoutes articles={articles} onArticleCreated={handleAddArticle} />
         </main>
 
         {/* Footer */}

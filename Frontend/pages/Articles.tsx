@@ -1,10 +1,34 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { articles } from '../data'
+import { useNavigate, Link } from 'react-router-dom'
+import { articles as staticArticles } from '../data'
 
 const categories = ['All', 'Quantum News', 'Concept Explanations', 'Interesting Stories', 'Discussions']
 
-function ArticleCard({ article, index, featured = false }: { article: typeof articles[0]; index: number; featured?: boolean }) {
+type SortOption = 'latest' | 'oldest'
+
+interface Article {
+  id: string | number
+  title: string
+  excerpt: string
+  image: string
+  category: string
+  author: string
+  date: string
+  readTime: string
+}
+
+function ArticleCard({ 
+  article, 
+  index, 
+  featured = false,
+  onClick 
+}: { 
+  article: Article; 
+  index: number; 
+  featured?: boolean;
+  onClick?: () => void;
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true })
   const [hovered, setHovered] = useState(false)
@@ -18,6 +42,7 @@ function ArticleCard({ article, index, featured = false }: { article: typeof art
         transition={{ duration: 0.8 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onClick={onClick}
         style={{
           background: hovered ? 'rgba(124,58,237,0.1)' : 'rgba(124,58,237,0.06)',
           backdropFilter: 'blur(20px)',
@@ -25,13 +50,13 @@ function ArticleCard({ article, index, featured = false }: { article: typeof art
           borderRadius: 24,
           overflow: 'hidden',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           transition: 'all 0.4s ease',
           boxShadow: hovered ? '0 20px 60px rgba(124,58,237,0.2)' : 'none',
           cursor: 'pointer',
         }}
       >
-        <div style={{ position: 'relative', minHeight: 360, overflow: 'hidden' }}>
+        <div style={{ position: 'relative', minHeight: 320, overflow: 'hidden' }}>
           <img
             src={article.image}
             alt={article.title}
@@ -45,8 +70,8 @@ function ArticleCard({ article, index, featured = false }: { article: typeof art
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, rgba(3,3,15,0.8))' }} />
         </div>
-        <div style={{ padding: '48px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ padding: '40px 32px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             <span style={{ padding: '4px 12px', background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(196,181,253,0.2)', borderRadius: 100, fontSize: 11, color: '#c4b5fd', fontFamily: 'JetBrains Mono' }}>
               FEATURED
             </span>
@@ -79,6 +104,7 @@ function ArticleCard({ article, index, featured = false }: { article: typeof art
       transition={{ delay: index * 0.08, duration: 0.6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
       style={{
         background: hovered ? 'rgba(124,58,237,0.1)' : 'rgba(124,58,237,0.05)',
         backdropFilter: 'blur(20px)',
@@ -137,17 +163,51 @@ function ArticleCard({ article, index, featured = false }: { article: typeof art
   )
 }
 
-export default function Articles() {
-  const [activeCategory, setActiveCategory] = useState('All')
+interface ArticlesProps {
+  articlesData?: Article[]
+  onSelectArticle?: (id: string | number) => void
+}
 
-  const filtered = activeCategory === 'All'
-    ? articles
-    : articles.filter(a => a.category === activeCategory)
+export default function Articles({ articlesData, onSelectArticle }: ArticlesProps) {
+  const navigate = useNavigate()
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('latest')
+
+  // Fallback to static data if no live state is passed
+  const displayArticles = articlesData || staticArticles
+
+  // Helper handler for clicking an article
+  const handleArticleClick = (id: string | number) => {
+    if (onSelectArticle) {
+      onSelectArticle(id)
+    } else {
+      navigate(`/articles/${id}`)
+    }
+  }
+
+  // Filter and Sort Logic
+  const filteredAndSorted = useMemo(() => {
+    return displayArticles
+      .filter(article => {
+        const matchesCategory = activeCategory === 'All' || article.category === activeCategory
+        const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              article.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+        return matchesCategory && matchesSearch
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.date).getTime()
+        const dateB = new Date(b.date).getTime()
+        return sortBy === 'latest' ? dateB - dateA : dateA - dateB
+      })
+  }, [displayArticles, activeCategory, searchQuery, sortBy])
+
+  const showFeatured = activeCategory === 'All' && searchQuery.trim() === '' && filteredAndSorted.length > 0
 
   return (
     <div style={{ minHeight: '100vh', paddingTop: 100, position: 'relative', zIndex: 1 }}>
       {/* Header */}
-      <div style={{ textAlign: 'center', padding: '60px 24px 64px', maxWidth: 700, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', padding: '40px 24px 32px', maxWidth: 700, margin: '0 auto' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,7 +221,7 @@ export default function Articles() {
           transition={{ delay: 0.1, duration: 0.8 }}
           style={{
             fontFamily: 'Outfit',
-            fontSize: 'clamp(40px, 7vw, 80px)',
+            fontSize: 'clamp(40px, 7vw, 72px)',
             fontWeight: 900,
             background: 'linear-gradient(135deg, #ffffff, #c4b5fd 40%, #a855f7)',
             WebkitBackgroundClip: 'text',
@@ -169,7 +229,7 @@ export default function Articles() {
             backgroundClip: 'text',
             letterSpacing: '-0.04em',
             lineHeight: 0.95,
-            marginBottom: 24,
+            marginBottom: 20,
           }}
         >
           Quantum<br />Articles
@@ -178,15 +238,105 @@ export default function Articles() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          style={{ color: 'rgba(248,248,255,0.5)', fontFamily: 'Inter', fontSize: 16, lineHeight: 1.7 }}
+          style={{ color: 'rgba(248,248,255,0.5)', fontFamily: 'Inter', fontSize: 16, lineHeight: 1.7, marginBottom: 28 }}
         >
           Explore the frontier of quantum science through our curated articles,
           explainers, discussions, and news from the quantum world.
         </motion.p>
+
+        {/* 🚀 WRITE ARTICLE BUTTON */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.04 }} 
+          whileTap={{ scale: 0.96 }}
+        >
+          <Link
+            to="/articles/new"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '12px 26px',
+              background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+              border: '1px solid rgba(196,181,253,0.3)',
+              borderRadius: 100,
+              color: '#fff',
+              fontFamily: 'Inter',
+              fontWeight: 600,
+              fontSize: 14,
+              textDecoration: 'none',
+              boxShadow: '0 4px 20px rgba(124,58,237,0.35)',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Write Article
+          </Link>
+        </motion.div>
       </div>
 
-      {/* Category pills */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 48px' }}>
+      {/* Controls Container: Search & Sort */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 24px' }}>
+        <div style={{
+          display: 'flex',
+          gap: 16,
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: 'rgba(124,58,237,0.03)',
+          border: '1px solid rgba(196,181,253,0.1)',
+          borderRadius: 16,
+          padding: '12px 20px',
+          backdropFilter: 'blur(12px)'
+        }}>
+          {/* Search Bar Input */}
+          <div style={{ flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ color: 'rgba(196,181,253,0.5)' }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search articles by title or keyword..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: '#fff',
+                fontFamily: 'Inter',
+                fontSize: 14,
+              }}
+            />
+          </div>
+
+          {/* Sort Selection */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: 'rgba(248,248,255,0.4)', fontFamily: 'Inter' }}>Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(196,181,253,0.2)',
+                borderRadius: 8,
+                color: '#c4b5fd',
+                padding: '6px 12px',
+                fontSize: 12,
+                fontFamily: 'JetBrains Mono',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="latest" style={{ background: '#0a0a16', color: '#fff' }}>Latest First</option>
+              <option value="oldest" style={{ background: '#0a0a16', color: '#fff' }}>Oldest First</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Pills */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 40px' }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
           {categories.map(cat => (
             <motion.button
@@ -213,26 +363,47 @@ export default function Articles() {
         </div>
       </div>
 
+      {/* Main Content Area */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 120px' }}>
         <AnimatePresence mode="wait">
-          <motion.div key={activeCategory} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {/* Featured article */}
-            {activeCategory === 'All' && filtered.length > 0 && (
+          <motion.div key={activeCategory + searchQuery + sortBy} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {/* Empty State */}
+            {filteredAndSorted.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '80px 20px', color: 'rgba(248,248,255,0.4)', fontFamily: 'Inter' }}>
+                <p style={{ fontSize: 18, marginBottom: 8 }}>No articles found</p>
+                <p style={{ fontSize: 13 }}>Try adjusting your search query or category filter.</p>
+              </div>
+            )}
+
+            {/* Featured Article */}
+            {showFeatured && (
               <div style={{ marginBottom: 40 }}>
-                <ArticleCard article={filtered[0]} index={0} featured />
+                <ArticleCard 
+                  article={filteredAndSorted[0]} 
+                  index={0} 
+                  featured 
+                  onClick={() => handleArticleClick(filteredAndSorted[0].id)}
+                />
               </div>
             )}
 
             {/* Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: 24,
-            }}>
-              {(activeCategory === 'All' ? filtered.slice(1) : filtered).map((article, i) => (
-                <ArticleCard key={article.id} article={article} index={i} />
-              ))}
-            </div>
+            {filteredAndSorted.length > 0 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                gap: 24,
+              }}>
+                {(showFeatured ? filteredAndSorted.slice(1) : filteredAndSorted).map((article, i) => (
+                  <ArticleCard 
+                    key={article.id} 
+                    article={article} 
+                    index={i} 
+                    onClick={() => handleArticleClick(article.id)}
+                  />
+                ))}
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
