@@ -1,13 +1,13 @@
 import { useState, useRef, useMemo } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { articles as staticArticles } from '../data'
 
 const categories = ['All', 'Quantum News', 'Concept Explanations', 'Interesting Stories', 'Discussions']
 
 type SortOption = 'latest' | 'oldest'
 
-interface Article {
+export interface Article {
   id: string | number
   title: string
   excerpt: string
@@ -16,6 +16,7 @@ interface Article {
   author: string
   date: string
   readTime: string
+  status?: 'approved' | 'pending'
 }
 
 function ArticleCard({ 
@@ -164,20 +165,27 @@ function ArticleCard({
 }
 
 interface ArticlesProps {
+  user?: { name: string; role: 'user' | 'admin' } | null
   articlesData?: Article[]
   onSelectArticle?: (id: string | number) => void
+  onApproveArticle?: (id: string | number) => void
+  onRejectArticle?: (id: string | number) => void
 }
 
-export default function Articles({ articlesData, onSelectArticle }: ArticlesProps) {
+export default function Articles({ 
+  user,
+  articlesData, 
+  onSelectArticle,
+  onApproveArticle,
+  onRejectArticle
+}: ArticlesProps) {
   const navigate = useNavigate()
   const [activeCategory, setActiveCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('latest')
 
-  // Fallback to static data if no live state is passed
   const displayArticles = articlesData || staticArticles
 
-  // Helper handler for clicking an article
   const handleArticleClick = (id: string | number) => {
     if (onSelectArticle) {
       onSelectArticle(id)
@@ -186,9 +194,28 @@ export default function Articles({ articlesData, onSelectArticle }: ArticlesProp
     }
   }
 
-  // Filter and Sort Logic
+  // Handle Write Article button click with auth check
+  const handleWriteArticleClick = () => {
+    if (!user) {
+      navigate('/continue') // Routes guests to your "Continue As..." checkpoint page
+    } else {
+      navigate('/articles/new')
+    }
+  }
+
+  // Filter approved articles for general display
+  const approvedArticles = useMemo(() => {
+    return displayArticles.filter(art => (art.status || 'approved') === 'approved')
+  }, [displayArticles])
+
+  // Filter pending articles for Admin review
+  const pendingArticles = useMemo(() => {
+    return displayArticles.filter(art => art.status === 'pending')
+  }, [displayArticles])
+
+  // Filter and Sort Logic for Approved Articles
   const filteredAndSorted = useMemo(() => {
-    return displayArticles
+    return approvedArticles
       .filter(article => {
         const matchesCategory = activeCategory === 'All' || article.category === activeCategory
         const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -200,7 +227,7 @@ export default function Articles({ articlesData, onSelectArticle }: ArticlesProp
         const dateB = new Date(b.date).getTime()
         return sortBy === 'latest' ? dateB - dateA : dateA - dateB
       })
-  }, [displayArticles, activeCategory, searchQuery, sortBy])
+  }, [approvedArticles, activeCategory, searchQuery, sortBy])
 
   const showFeatured = activeCategory === 'All' && searchQuery.trim() === '' && filteredAndSorted.length > 0
 
@@ -244,7 +271,7 @@ export default function Articles({ articlesData, onSelectArticle }: ArticlesProp
           explainers, discussions, and news from the quantum world.
         </motion.p>
 
-        {/* 🚀 WRITE ARTICLE BUTTON */}
+        {/* WRITE ARTICLE BUTTON */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -252,8 +279,8 @@ export default function Articles({ articlesData, onSelectArticle }: ArticlesProp
           whileHover={{ scale: 1.04 }} 
           whileTap={{ scale: 0.96 }}
         >
-          <Link
-            to="/articles/new"
+          <button
+            onClick={handleWriteArticleClick}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -266,15 +293,85 @@ export default function Articles({ articlesData, onSelectArticle }: ArticlesProp
               fontFamily: 'Inter',
               fontWeight: 600,
               fontSize: 14,
-              textDecoration: 'none',
               boxShadow: '0 4px 20px rgba(124,58,237,0.35)',
               cursor: 'pointer'
             }}
           >
             <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Write Article
-          </Link>
+          </button>
         </motion.div>
       </div>
+
+      {/* ADMIN PENDING APPROVAL QUEUE */}
+      {user?.role === 'admin' && pendingArticles.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: '0 auto 40px', padding: '0 24px' }}>
+          <div style={{
+            background: 'rgba(234, 179, 8, 0.05)',
+            border: '1px solid rgba(234, 179, 8, 0.25)',
+            borderRadius: 20,
+            padding: 24,
+            backdropFilter: 'blur(12px)'
+          }}>
+            <h2 style={{ fontFamily: 'Outfit', color: '#eab308', fontSize: 20, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>⚠️</span> Pending Approvals ({pendingArticles.length})
+            </h2>
+            <div style={{ display: 'grid', gap: 16 }}>
+              {pendingArticles.map((art) => (
+                <div key={art.id} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '16px 20px',
+                  borderRadius: 12,
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  flexWrap: 'wrap',
+                  gap: 12
+                }}>
+                  <div>
+                    <h4 style={{ color: '#fff', fontFamily: 'Outfit', fontSize: 16, marginBottom: 4 }}>{art.title}</h4>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'Inter' }}>
+                      By {art.author} · Category: {art.category}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => onApproveArticle && onApproveArticle(art.id)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 8,
+                        background: 'rgba(34, 197, 94, 0.2)',
+                        border: '1px solid rgba(34, 197, 94, 0.4)',
+                        color: '#4ade80',
+                        fontFamily: 'JetBrains Mono',
+                        fontSize: 12,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => onRejectArticle && onRejectArticle(art.id)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 8,
+                        background: 'rgba(239, 68, 68, 0.2)',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        color: '#f87171',
+                        fontFamily: 'JetBrains Mono',
+                        fontSize: 12,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Controls Container: Search & Sort */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 24px' }}>

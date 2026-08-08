@@ -5,19 +5,20 @@ import { useNavigate } from 'react-router-dom'
 const categories = ['Quantum News', 'Concept Explanations', 'Interesting Stories', 'Discussions']
 
 interface CreateArticleProps {
+  user?: { name: string; role: 'user' | 'admin' } | null
   onArticleCreated?: (newArticle: any) => void
   onCancel?: () => void
 }
 
-export default function CreateArticle({ onArticleCreated, onCancel }: CreateArticleProps) {
+export default function CreateArticle({ user, onArticleCreated, onCancel }: CreateArticleProps) {
   const navigate = useNavigate()
 
-  // Form State
+  // Form State - prefill author if user exists
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState(categories[0])
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
+  const [author, setAuthor] = useState(user?.name || '')
   const [imageUrl, setImageUrl] = useState('')
 
   // UI state
@@ -47,6 +48,9 @@ export default function CreateArticle({ onArticleCreated, onCancel }: CreateArti
 
     setIsSubmitting(true)
 
+    // Determine status based on role: Admins publish immediately; users send to pending moderation queue
+    const status = user?.role === 'admin' ? 'approved' : 'pending'
+
     const newArticle = {
       id: Date.now(),
       title,
@@ -56,15 +60,21 @@ export default function CreateArticle({ onArticleCreated, onCancel }: CreateArti
       author,
       date: new Date().toISOString().split('T')[0],
       readTime: calculateReadTime(content),
-      image: imageUrl || 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800'
+      image: imageUrl || 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800',
+      status,
     }
 
-    // Simulate delay, update global state, and navigate
+    // Simulate delay, update global state, and navigate back
     setTimeout(() => {
       setIsSubmitting(false)
       if (onArticleCreated) {
         onArticleCreated(newArticle)
       }
+      
+      if (status === 'pending') {
+        alert('Your article has been submitted for approval by an admin!')
+      }
+
       navigate('/articles')
     }, 600)
   }
@@ -120,9 +130,25 @@ export default function CreateArticle({ onArticleCreated, onCancel }: CreateArti
           }}>
             Create New Article
           </h1>
-          <p style={{ color: 'rgba(248,248,255,0.5)', fontFamily: 'Inter', fontSize: 14, marginBottom: 36 }}>
+          <p style={{ color: 'rgba(248,248,255,0.5)', fontFamily: 'Inter', fontSize: 14, marginBottom: 28 }}>
             Share your research, concepts, or insights with the quantum community.
           </p>
+
+          {/* User Notice Banner if non-admin */}
+          {user?.role !== 'admin' && (
+            <div style={{
+              background: 'rgba(168, 85, 247, 0.08)',
+              border: '1px solid rgba(168, 85, 247, 0.25)',
+              borderRadius: 12,
+              padding: '12px 16px',
+              marginBottom: 28,
+              fontSize: 13,
+              fontFamily: 'Inter',
+              color: '#c4b5fd'
+            }}>
+              ℹ️ <strong>Submission Info:</strong> Articles created by non-admin accounts will be placed in a moderation queue for approval before being publicly displayed.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             
@@ -252,7 +278,11 @@ export default function CreateArticle({ onArticleCreated, onCancel }: CreateArti
                   opacity: isSubmitting ? 0.7 : 1
                 }}
               >
-                {isSubmitting ? 'Publishing...' : 'Publish Article'}
+                {isSubmitting 
+                  ? 'Submitting...' 
+                  : user?.role === 'admin' 
+                    ? 'Publish Article' 
+                    : 'Submit for Review'}
               </button>
             </div>
 
