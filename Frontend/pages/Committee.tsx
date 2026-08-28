@@ -134,7 +134,7 @@ function TypewriterLabel({
 // Four animated targeting-reticle corner brackets.
 function HudCorners({
   size = 22,
-  color = "#22d3ee",
+  color = "#fff",
   thickness = 2,
   inset = -6,
 }: {
@@ -193,7 +193,7 @@ function HudCorners({
 
 // A single glowing line that sweeps across its parent once on mount.
 function ScanSweep({
-  color = "rgba(34,211,238,0.9)",
+  color = "rgba(225,225,225,0.9)",
   duration = 0.5,
   vertical = true,
 }: {
@@ -420,7 +420,7 @@ function HelixCard({
                 zIndex: 20,
               }}
             >
-              <HudCorners size={20} inset={-8} color="#22d3ee" />
+              <HudCorners size={20} inset={-8} color="rgb(168, 85, 247)" />
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [0.15, 0.55, 0.15] }}
@@ -440,7 +440,7 @@ function HelixCard({
                   borderRadius: 10,
                 }}
               >
-                <ScanSweep duration={0.38} color="rgba(34,211,238,0.85)" />
+                <ScanSweep duration={0.38} color="rgba(168, 85, 247, 0.85)" />
               </div>
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
@@ -454,7 +454,7 @@ function HelixCard({
                   fontFamily: "JetBrains Mono",
                   fontSize: 9,
                   letterSpacing: "0.2em",
-                  color: "#22d3ee",
+                  color: "#fff",
                   textTransform: "uppercase",
                 }}
               >
@@ -854,7 +854,7 @@ export default function Committee() {
                     zIndex: 8,
                   }}
                 >
-                  <ScanSweep duration={0.6} color="rgba(34,211,238,0.7)" />
+                  <ScanSweep duration={0.6} color="rgba(168, 85, 247, 0.85)" />
                 </div>
 
                 {/* Left column: all details */}
@@ -877,7 +877,7 @@ export default function Committee() {
                       fontFamily: "JetBrains Mono",
                       fontSize: 10,
                       letterSpacing: "0.22em",
-                      color: "#22d3ee",
+                      color: "#fff",
                       textTransform: "uppercase",
                     }}
                   >
@@ -1038,7 +1038,7 @@ export default function Committee() {
                   </div>
                 </motion.div>
 
-                <HudCorners size={26} inset={10} color="#22d3ee" />
+                <HudCorners size={26} inset={10} color="rgb(168, 85, 247)" />
               </motion.div>
             </motion.div>
           )}
