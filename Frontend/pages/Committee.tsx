@@ -20,12 +20,22 @@ interface Member {
   instagram?: string;
 }
 
+const domainGroups = committee.directors.map((director) => ({
+  domain: director.domain,
+  director,
+  deputies: committee.deputies.filter(
+    (deputy) => deputy.domain === director.domain
+  ),
+}));
+
 const members = [
-  ...committee.faculty,
   committee.chair,
   committee.viceChair,
-  ...committee.directors,
-  ...committee.deputies,
+
+  ...domainGroups.flatMap((group) => [
+    group.director,
+    ...group.deputies,
+  ]),
 ] as Member[];
 
 const CARD_SIZE = 300;
@@ -931,6 +941,21 @@ export default function Committee() {
 
   const vScroll = useSpring(0, { stiffness: 95, damping: 24, mass: 1.0 });
 
+  const navigateToDomain = (domain: string) => {
+  const directorIndex = members.findIndex(
+    (member) =>
+      member.role === "Director" &&
+      member.domain === domain
+  );
+
+  if (directorIndex === -1) return;
+
+  const ySpacing = window.innerWidth < 768 ? 82 : 87;
+
+  vScrollTarget.current = directorIndex * ySpacing;
+  vScroll.set(vScrollTarget.current);
+};
+
   const dismissHeader = () => {
     setShowHeader((prev) => (prev ? false : prev));
   };
@@ -1015,6 +1040,73 @@ export default function Committee() {
           transformStyle: "preserve-3d",
         }}
       >
+
+      {/* Domain Navigation */}
+      <div
+      style={{
+        position: "absolute",
+        top: 24,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "min(94vw, 1100px)",
+        zIndex: 40,
+
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 8,
+        flexWrap: "wrap",
+
+        pointerEvents: "auto",
+      }}
+      >
+      {domainGroups.map((group) => (
+        <button
+          key={group.domain}
+          onClick={() => navigateToDomain(group.domain)}
+          style={{
+            border: "1px solid rgba(196, 181, 253, 0.28)",
+            background: "rgba(7, 7, 26, 0.72)",
+            backdropFilter: "blur(14px)",
+
+            color: "#C4B5FD",
+
+            padding: "9px 15px",
+            borderRadius: 999,
+
+            fontFamily: "JetBrains Mono",
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+
+            cursor: "pointer",
+
+            transition:
+              "color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "#22D3EE";
+            e.currentTarget.style.borderColor =
+              "rgba(34, 211, 238, 0.7)";
+            e.currentTarget.style.background =
+              "rgba(8, 51, 68, 0.55)";
+            e.currentTarget.style.boxShadow =
+              "0 0 20px rgba(34, 211, 238, 0.18)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "#C4B5FD";
+            e.currentTarget.style.borderColor =
+              "rgba(196, 181, 253, 0.28)";
+            e.currentTarget.style.background =
+              "rgba(7, 7, 26, 0.72)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
+        >
+          {group.domain}
+        </button>
+      ))}
+      </div>  
         {/* Soft center glow — no opaque top band */}
         <div
           style={{
@@ -1090,73 +1182,6 @@ export default function Committee() {
             />
           ))}
         </div>
-
-        {/* Cinematic Header Text — removed on first scroll */}
-        <AnimatePresence>
-          {showHeader && (
-            <motion.div
-              initial={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -24, filter: "blur(6px)" }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                zIndex: 3,
-                pointerEvents: "none",
-                paddingTop: "clamp(96px, 13vh, 132px)",
-              }}
-            >
-              <div
-                style={{
-                  textAlign: "center",
-                  maxWidth: 680,
-                  padding: "0 24px",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "JetBrains Mono",
-                    color: "#a855f7",
-                    fontSize: 12,
-                    letterSpacing: "0.25em",
-                    textTransform: "uppercase",
-                    marginBottom: 20,
-                  }}
-                >
-                  SoQC • Helix Gallery
-                </div>
-                <h1
-                  style={{
-                    fontFamily: "Outfit",
-                    fontSize: "clamp(28px, 4vw, 52px)",
-                    fontWeight: 800,
-                    color: "#fff",
-                    marginBottom: 10,
-                    lineHeight: 1.1,
-                  }}
-                >
-                  Diving into the core.
-                </h1>
-                <p
-                  style={{
-                    fontFamily: "Inter",
-                    fontSize: 15,
-                    lineHeight: 1.7,
-                    color: "rgba(248,248,255,0.55)",
-                    maxWidth: 520,
-                    margin: "0 auto",
-                  }}
-                >
-                  Scroll through the spiral. Cards loop infinitely as you
-                  descend the helix.
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* 3D Helix Layer */}
         <div

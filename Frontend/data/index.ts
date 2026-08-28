@@ -260,93 +260,94 @@ export const projects = [
 ];
 
 export const committee = {
-  faculty: [
-    {
-      name: "Prof. R. Krishnamurthy",
-      role: "Founding Member",
-      domain: "Quantum Optics",
-      dept: "Physics",
-      year: "",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&auto=format",
-      interests: ["Quantum Optics", "Condensed Matter", "Quantum Information"],
-      linkedin: "#",
-      instagram: "#",
-    },
-    {
-      name: "Prof. A. Bhattacharya",
-      role: "Founding Member",
-      domain: "Quantum Algorithms",
-      dept: "Computer Science",
-      year: "",
-      image:
-        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop&auto=format",
-      interests: ["Quantum Algorithms", "Complexity Theory", "Cryptography"],
-      linkedin: "#",
-      instagram: "#",
-    },
-  ],
-
   chair: {
-    name: "Arjun Mehta",
-    role: "Founding Member",
-    domain: "Quantum Hardware",
-    year: "4th Year",
-    dept: "Physics & CS",
-    image:
-      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&h=300&fit=crop&auto=format",
-    interests: ["Quantum Hardware", "Error Correction"],
+    name: "Calvin S",
+    role: "Chairperson",
+    domain: "-",
+    year: "IV Year",
+    dept: "CSE",
+    image: "",
+    interests: [],
     linkedin: "#",
     instagram: "#",
   },
 
   viceChair: {
-    name: "Priya Sharma",
-    role: "Founding Member",
-    domain: "Quantum Machine Learning",
-    year: "3rd Year",
-    dept: "Mathematics",
-    image:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b77c?w=300&h=300&fit=crop&auto=format",
-    interests: ["QML", "Quantum Algorithms"],
+    name: "Jeffrin Edward A",
+    role: "Vice Chairperson",
+    domain: "-",
+    year: "IV Year",
+    dept: "IT",
+    image: "",
+    interests: [],
     linkedin: "#",
     instagram: "#",
   },
 
   directors: [
     {
-      name: "Dhruv Verma",
+      name: "Anantha Yashwanth G",
       role: "Director",
-      domain: "Research",
-      year: "3rd Year",
-      dept: "Physics",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&auto=format",
-      interests: ["VQE", "Quantum Chemistry"],
+      domain: "Operations and Management",
+      year: "IV Year",
+      dept: "Geo-Informatics",
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
     {
-      name: "Sneha Patel",
+      name: "Sathia Danish Kevin Merlin Manohar M",
       role: "Director",
-      domain: "Events",
-      year: "3rd Year",
+      domain: "Resources",
+      year: "IV Year",
       dept: "ECE",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&auto=format",
-      interests: ["Quantum Cryptography", "Networking"],
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
     {
-      name: "Karan Singh",
+      name: "Shevaani A",
       role: "Director",
-      domain: "Content",
-      year: "2nd Year",
-      dept: "CS",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&auto=format",
-      interests: ["Quantum Computing", "Technical Writing"],
+      domain: "Web Development",
+      year: "IV Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Varshini G",
+      role: "Director",
+      domain: "Outreach and Relations",
+      year: "III Year",
+      dept: "ECE - VLSI",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Jenny Alice N",
+      role: "Director",
+      domain: "Visuals",
+      year: "IV Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Danish S",
+      role: "Director",
+      domain: "Innovation",
+      year: "III Year",
+      dept: "ECE",
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
@@ -354,50 +355,112 @@ export const committee = {
 
   deputies: [
     {
-      name: "Rohan Joshi",
+      name: "Subbhadithya Singh",
       role: "Deputy Head",
-      domain: "Research",
-      year: "2nd Year",
-      dept: "Physics",
-      image:
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop&auto=format",
-      interests: ["Quantum Research", "Quantum Algorithms"],
+      domain: "Operations and Management",
+      year: "IV Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
     {
-      name: "Ananya Krishnan",
+      name: "Harshad Kumar S",
       role: "Deputy Head",
-      domain: "Events",
-      year: "2nd Year",
-      dept: "CS",
-      image:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop&auto=format",
-      interests: ["Event Management", "Quantum Computing"],
+      domain: "Resources",
+      year: "II Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
     {
-      name: "Vikram Rao",
+      name: "Sayyad Nazma",
       role: "Deputy Head",
-      domain: "Content",
-      year: "2nd Year",
-      dept: "Mathematics",
-      image:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop&auto=format",
-      interests: ["Technical Writing", "Quantum Computing"],
+      domain: "Resources",
+      year: "III Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
     {
-      name: "Meera Nair",
+      name: "Thin Htet Htet Soe E",
       role: "Deputy Head",
-      domain: "Design",
-      year: "1st Year",
-      dept: "CS",
-      image:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&h=300&fit=crop&auto=format",
-      interests: ["UI/UX Design", "Scientific Visualization"],
+      domain: "Web Development",
+      year: "II Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Edeline Bertina A",
+      role: "Deputy Head",
+      domain: "Web Development",
+      year: "II Year",
+      dept: "IT",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Tharun",
+      role: "Deputy Head",
+      domain: "Outreach and Relations",
+      year: "II Year",
+      dept: "ECE",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Varsha K",
+      role: "Deputy Head",
+      domain: "Visuals",
+      year: "II Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Advaith P.V",
+      role: "Deputy Head",
+      domain: "Visuals",
+      year: "II Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Niladri Roy K",
+      role: "Deputy Head",
+      domain: "Innovation",
+      year: "II Year",
+      dept: "ECE-VLSI",
+      image: "",
+      interests: [],
+      linkedin: "#",
+      instagram: "#",
+    },
+    {
+      name: "Ayush R",
+      role: "Deputy Head",
+      domain: "Innovation",
+      year: "II Year",
+      dept: "CSE",
+      image: "",
+      interests: [],
       linkedin: "#",
       instagram: "#",
     },
@@ -405,7 +468,26 @@ export const committee = {
 };
 
 export const roleColors = {
-  "Founding Member": {
+
+  Chairperson: {
+    main: "#FBBF24",
+    light: "rgba(251, 191, 36, 0.55)",
+    glow: "rgba(251, 191, 36, 0.45)",
+    softGlow: "rgba(251, 191, 36, 0.15)",
+    background:
+      "linear-gradient(145deg, rgba(120, 80, 8, 0.45), rgba(7, 7, 26, 0.94))",
+  },
+
+  "Vice Chairperson": {
+    main: "#FF4FD8",
+    light: "rgba(255, 79, 216, 0.55)",
+    glow: "rgba(255, 79, 216, 0.45)",
+    softGlow: "rgba(255, 79, 216, 0.15)",
+    background:
+      "linear-gradient(145deg, rgba(120, 20, 100, 0.5), rgba(7, 7, 26, 0.94))",
+  },
+
+  "Deputy Head": {
     main: "#c084fc",
     light: "rgba(192, 132, 252, 0.55)",
     glow: "rgba(192, 132, 252, 0.45)",
@@ -422,8 +504,10 @@ export const roleColors = {
     background:
       "linear-gradient(145deg, rgba(8, 51, 68, 0.55), rgba(7, 7, 26, 0.94))",
   },
+};
 
-  "Deputy Head": {
+/*
+"Deputy Head": {
     main: "#f472b6",
     light: "rgba(244, 114, 182, 0.55)",
     glow: "rgba(244, 114, 182, 0.45)",
@@ -431,4 +515,14 @@ export const roleColors = {
     background:
       "linear-gradient(145deg, rgba(112, 26, 73, 0.5), rgba(7, 7, 26, 0.94))",
   },
-};
+
+"Deputy Head": {
+  main: "#F9A8D4",
+  light: "rgba(249, 168, 212, 0.55)",
+  glow: "rgba(249, 168, 212, 0.45)",
+  softGlow: "rgba(249, 168, 212, 0.15)",
+  background:
+    "linear-gradient(145deg, rgba(131, 45, 94, 0.45), rgba(7, 7, 26, 0.94))",
+},
+
+*/
