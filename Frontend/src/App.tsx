@@ -1,10 +1,16 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import CustomCursor from '../components/CustomCursor'
-import QuantumBackground from '../components/QuantumBackground'
-import Navigation from '../components/Navigation'
-import SoundToggle from '../components/SoundToggle'
+import { Suspense, lazy, useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import CustomCursor from "../components/CustomCursor";
+import QuantumBackground from "../components/QuantumBackground";
+import Navigation from "../components/Navigation";
+import SoundToggle from "../components/SoundToggle";
 
 const Home = lazy(() => import("../pages/Home"));
 const Events = lazy(() => import("../pages/Events"));
@@ -163,7 +169,13 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
 
   return (
     <>
-      <div style={{ minHeight: '100vh', background: '#03030f', position: 'relative' }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#03030f",
+          position: "relative",
+        }}
+      >
         {/* Persistent canvas background */}
         <QuantumBackground />
 
