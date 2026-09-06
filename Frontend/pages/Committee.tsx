@@ -6,7 +6,7 @@ import {
   useTransform,
   useAnimationFrame,
 } from "framer-motion";
-import { committee, roleColors } from "../data";
+import { committee, roleColors } from "../data/committee/committee";
 
 interface Member {
   name: string;
@@ -18,6 +18,7 @@ interface Member {
   interests?: string[];
   linkedin: string;
   instagram?: string;
+  quote?: string;
 }
 
 const domainGroups = committee.directors.map((director) => ({
@@ -258,282 +259,6 @@ function ChromaticFlash({ duration = 0.35 }: { duration?: number }) {
     />
   );
 }
-
-// function HelixCard({
-//   member,
-//   index,
-//   totalItems,
-//   vScroll,
-//   onSelect,
-//   isLocking,
-// }: {
-//   member: Member;
-//   index: number;
-//   totalItems: number;
-//   vScroll: any;
-//   onSelect: (m: Member) => void;
-//   isLocking: boolean;
-// }) {
-//   const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
-
-//   useEffect(() => {
-//     setDimensions({ width: window.innerWidth, height: window.innerHeight });
-//     const handleResize = () =>
-//       setDimensions({ width: window.innerWidth, height: window.innerHeight });
-//     window.addEventListener("resize", handleResize);
-//     return () => window.removeEventListener("resize", handleResize);
-//   }, []);
-
-//   const itemsPerRevolution = 6;
-//   const helixTwist = 1.15;
-//   const angleSpacing = ((Math.PI * 2) / itemsPerRevolution) * helixTwist;
-//   const cylinderRadius = dimensions.width < 768 ? 155 : 265;
-//   const ySpacing = dimensions.width < 768 ? 82 : 92;
-//   const zOffset = -140;
-//   const startYOffset = 0;
-
-//   // Total height block occupied by one full iteration loop
-//   const totalLoopHeight = totalItems * ySpacing;
-
-//   // Helper mapping shared across derivations to keep spatial math perfectly synchronized
-//   const getLoopState = () => {
-//     const s = vScroll.get();
-
-//     // Calculate current un-looped Y coordinate relative to the camera center viewport point
-//     let relativeY = index * ySpacing - s + startYOffset;
-
-//     // Infinite Loop Math logic:
-//     // Shift cards vertically back up or down if they move too far off screen limits
-//     const halfLoop = totalLoopHeight / 2;
-//     relativeY = (relativeY - startYOffset + halfLoop) % totalLoopHeight;
-//     if (relativeY < 0) relativeY += totalLoopHeight;
-//     const finalY = relativeY - halfLoop + startYOffset;
-
-//     // Tie rotation to each card's vertical travel rather than rotating the
-//     // entire gallery as a unit. A card becomes front-facing only as it passes
-//     // through the center, then turns away while continuing downward.
-//     const angle = (finalY / ySpacing) * angleSpacing;
-
-//     return { angle, y: finalY };
-//   };
-
-//   const styleTransform = useTransform(() => {
-//     const { angle, y } = getLoopState();
-
-//     const x = Math.sin(angle) * cylinderRadius;
-//     const rawZ = Math.cos(angle) * cylinderRadius;
-//     const z = rawZ + zOffset;
-//     const facing = -Math.atan2(x, rawZ);
-//     return `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${facing}rad)`;
-//   });
-
-//   const styleOpacity = useTransform(() => {
-//     const { angle } = getLoopState();
-//     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
-//     return 0.35 + Math.pow(focus, 1.4) * 0.65;
-//   });
-
-//   const styleFilter = useTransform(() => {
-//     const { angle } = getLoopState();
-//     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
-//     return `saturate(${0.65 + focus * 0.35})`;
-//   });
-
-//   const styleZIndex = useTransform(() => {
-//     const { angle } = getLoopState();
-//     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
-//     return Math.round(focus * 200);
-//   });
-
-//   const styleBoxShadow = useTransform(() => {
-//     const { angle } = getLoopState();
-//     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
-//     if (focus > 0.94)
-//       return "0 0 50px rgba(167, 139, 250, 0.45), inset 0 0 20px rgba(124, 58, 237, 0.25), 0 14px 28px rgba(0,0,0,0.5)";
-//     if (focus > 0.6)
-//       return "0 0 30px rgba(167, 139, 250, 0.15), 0 10px 22px rgba(0,0,0,0.4)";
-//     return "0 8px 18px rgba(0,0,0,0.45), 0 1px 0 rgba(196,181,253,0.1)";
-//   });
-
-//   const styleBorder = useTransform(() => {
-//     const { angle } = getLoopState();
-//     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
-//     return `1px solid ${focus > 0.88 ? "rgba(196,181,253,0.5)" : focus > 0.6 ? "rgba(196,181,253,0.2)" : "rgba(255,255,255,0.04)"}`;
-//   });
-
-//   const designationOpacity = useTransform(() => 1);
-
-//   return (
-//     <motion.button
-//       onClick={() => onSelect(member)}
-//       style={{
-//         position: "absolute",
-//         left: "50%",
-//         top: "calc(50% - 72px)",
-//         width: CARD_SIZE,
-//         height: CARD_SIZE - 100,
-//         margin: 0,
-//         padding: 0,
-//         border: "none",
-//         background: "transparent",
-//         cursor: "pointer",
-//         transform: styleTransform,
-//         transformOrigin: "center center",
-//         opacity: styleOpacity,
-//         filter: styleFilter,
-//         zIndex: isLocking ? 999 : styleZIndex,
-//       }}
-//     >
-//       <motion.div
-//         animate={
-//           isLocking
-//             ? {
-//                 scale: [1, 1.035, 1.02],
-//                 filter: [
-//                   "brightness(1)",
-//                   "brightness(1.25)",
-//                   "brightness(1.1)",
-//                 ],
-//               }
-//             : { scale: 1, filter: "brightness(1)" }
-//         }
-//         transition={{ duration: 0.35, ease: "easeOut" }}
-//         style={{
-//           position: "relative",
-//           width: "100%",
-//           height: "100%",
-//           boxSizing: "border-box",
-//           borderRadius: 10,
-//           padding: 20,
-//           background: "rgba(7, 7, 26, 0.9)",
-//           backdropFilter: "blur(16px)",
-//           border: styleBorder,
-//           boxShadow: styleBoxShadow,
-//           display: "flex",
-//           flexDirection: "column",
-//           alignItems: "center",
-//           justifyContent: "center",
-//           textAlign: "center",
-//           gap: 12,
-//         }}
-//       >
-//         {/* Target-lock overlay: fires briefly the instant a card is selected */}
-//         <AnimatePresence>
-//           {isLocking && (
-//             <motion.div
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               exit={{ opacity: 0 }}
-//               style={{
-//                 position: "absolute",
-//                 inset: 0,
-//                 pointerEvents: "none",
-//                 zIndex: 20,
-//               }}
-//             >
-//               <HudCorners size={20} inset={-8} color="rgb(168, 85, 247)" />
-//               <motion.div
-//                 initial={{ opacity: 0 }}
-//                 animate={{ opacity: [0.15, 0.55, 0.15] }}
-//                 transition={{ duration: 0.35, repeat: Infinity }}
-//                 style={{
-//                   position: "absolute",
-//                   inset: 0,
-//                   borderRadius: 10,
-//                   border: "1px solid rgba(34,211,238,0.7)",
-//                 }}
-//               />
-//               <div
-//                 style={{
-//                   position: "absolute",
-//                   inset: 0,
-//                   overflow: "hidden",
-//                   borderRadius: 10,
-//                 }}
-//               >
-//                 <ScanSweep duration={0.38} color="rgba(168, 85, 247, 0.85)" />
-//               </div>
-//               <motion.div
-//                 initial={{ opacity: 0, y: 4 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 style={{
-//                   position: "absolute",
-//                   bottom: -22,
-//                   left: 0,
-//                   right: 0,
-//                   textAlign: "center",
-//                   fontFamily: "JetBrains Mono",
-//                   fontSize: 9,
-//                   letterSpacing: "0.2em",
-//                   color: "#fff",
-//                   textTransform: "uppercase",
-//                 }}
-//               >
-//                 Locating file…
-//               </motion.div>
-//             </motion.div>
-//           )}
-//         </AnimatePresence>
-
-//         <div
-//           style={{
-//             width: 80,
-//             height: 80,
-//             borderRadius: "50%",
-//             overflow: "hidden",
-//             border: "2px solid rgba(196,181,253,0.35)",
-//             flexShrink: 0,
-//             boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-//           }}
-//         >
-//           <img
-//             src={member.image}
-//             alt={member.name}
-//             style={{ width: "100%", height: "100%", objectFit: "cover" }}
-//           />
-//         </div>
-//         <div style={{ width: "100%" }}>
-//           <div
-//             style={{
-//               fontFamily: "Outfit",
-//               fontSize: 18,
-//               fontWeight: 700,
-//               color: "#fff",
-//               lineHeight: 1.2,
-//             }}
-//           >
-//             {member.name}
-//           </div>
-//           <motion.div
-//             style={{
-//               fontFamily: "JetBrains Mono",
-//               fontSize: 10,
-//               color: "#a855f7",
-//               letterSpacing: "0.12em",
-//               textTransform: "uppercase",
-//               marginTop: 6,
-//               opacity: designationOpacity,
-//             }}
-//           >
-//             {member.role}
-//           </motion.div>
-//         </div>
-//         <motion.div
-//           style={{
-//             fontFamily: "Inter",
-//             fontSize: 13,
-//             color: "rgba(248,248,255,0.65)",
-//             lineHeight: 1.4,
-//             opacity: designationOpacity,
-//           }}
-//         >
-//           {member.dept}
-//           {member.year ? ` · ${member.year}` : ""}
-//         </motion.div>
-//       </motion.div>
-//     </motion.button>
-//   );
-// }
 
 function HelixCard({
   member,
@@ -785,7 +510,7 @@ function HelixCard({
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
-          gap: 12,
+          gap: 8,
         }}
       >
         {/* Target-lock overlay */}
@@ -863,8 +588,8 @@ function HelixCard({
         {/* Profile image */}
         <div
           style={{
-            width: 80,
-            height: 80,
+            width: 72,
+            height: 72,
             borderRadius: "50%",
             overflow: "hidden",
             border: `2px solid ${roleColor.light}`,
@@ -872,15 +597,33 @@ function HelixCard({
             boxShadow: `0 4px 20px rgba(0,0,0,0.4), 0 0 18px ${roleColor.softGlow}`,
           }}
         >
-          <img
-            src={member.image}
-            alt={member.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-          />
+          {member.image ? (
+            <img
+              src={member.image}
+              alt={member.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                background: "rgba(255,255,255,0.05)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "rgba(255,255,255,0.2)",
+                fontSize: 28,
+                fontFamily: "Outfit",
+              }}
+            >
+              {member.name.charAt(0)}
+            </div>
+          )}
         </div>
 
         {/* Name + Role */}
@@ -888,7 +631,7 @@ function HelixCard({
           <div
             style={{
               fontFamily: "Outfit",
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: 700,
               color: "#fff",
               lineHeight: 1.2,
@@ -900,11 +643,11 @@ function HelixCard({
           <motion.div
             style={{
               fontFamily: "JetBrains Mono",
-              fontSize: 10,
+              fontSize: 9,
               color: roleColor.main,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              marginTop: 6,
+              marginTop: 4,
               opacity: designationOpacity,
               textShadow: `0 0 12px ${roleColor.glow}`,
             }}
@@ -917,7 +660,7 @@ function HelixCard({
         <motion.div
           style={{
             fontFamily: "Inter",
-            fontSize: 13,
+            fontSize: 12,
             color: "rgba(248,248,255,0.65)",
             lineHeight: 1.4,
             opacity: designationOpacity,
@@ -926,6 +669,47 @@ function HelixCard({
           {member.dept}
           {member.year ? ` · ${member.year}` : ""}
         </motion.div>
+
+        {/* Domain */}
+        {member.domain && member.domain !== "-" && (
+          <motion.div
+            style={{
+              fontFamily: "JetBrains Mono",
+              fontSize: 9,
+              color: "rgba(248,248,255,0.4)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              opacity: designationOpacity,
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+              paddingTop: 6,
+              width: "80%",
+            }}
+          >
+            {member.domain}
+          </motion.div>
+        )}
+
+        {/* Quote */}
+        {member.quote && (
+          <motion.div
+            style={{
+              fontFamily: "Inter",
+              fontSize: 8,
+              color: "rgba(248,248,255,0.35)",
+              lineHeight: 1.3,
+              fontStyle: "italic",
+              maxWidth: "90%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              marginTop: 2,
+            }}
+          >
+            "{member.quote.length > 50 ? member.quote.slice(0, 50) + "..." : member.quote}"
+          </motion.div>
+        )}
       </motion.div>
     </motion.button>
   );
@@ -1007,7 +791,7 @@ export default function Committee() {
     };
   }, [vScroll]);
 
-  // Keep the helix alive between interactions. The same scroll value drives
+  // Keep the helix alive between interactions. The same scroll value images
   // manual input and this subtle automatic descent, so incoming cards still
   // travel down into the center instead of spinning in place.
   useAnimationFrame((_, delta) => {
@@ -1353,7 +1137,45 @@ export default function Committee() {
                     {selectedMember.year ? ` · ${selectedMember.year}` : ""}
                   </motion.p>
 
-                  {selectedMember.interests && (
+                  {selectedMember.domain && selectedMember.domain !== "-" && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.55 }}
+                      style={{
+                        fontFamily: "JetBrains Mono",
+                        color: "rgba(248,248,255,0.5)",
+                        fontSize: 13,
+                        margin: "-6px 0 0 0",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {selectedMember.domain}
+                    </motion.p>
+                  )}
+
+                  {selectedMember.quote && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.55 }}
+                      style={{
+                        fontFamily: "Inter",
+                        color: "rgba(248,248,255,0.5)",
+                        lineHeight: 1.5,
+                        fontSize: 14,
+                        margin: "0 0 6px 0",
+                        fontStyle: "italic",
+                        borderLeft: `2px solid ${roleColor.glow}`,
+                        paddingLeft: 12,
+                      }}
+                    >
+                      "{selectedMember.quote}"
+                    </motion.p>
+                  )}
+
+                  {selectedMember.interests && selectedMember.interests.length > 0 && (
                     <div style={{ marginTop: 8 }}>
                       <motion.div
                         initial={{ opacity: 0 }}
@@ -1407,6 +1229,65 @@ export default function Committee() {
                       </div>
                     </div>
                   )}
+
+                  {/* Social Links with Icons in Modal */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    style={{ display: "flex", gap: 20, marginTop: 8 }}
+                  >
+                    {selectedMember.linkedin && selectedMember.linkedin !== "#" && (
+                      <a
+                        href={selectedMember.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "rgba(248,248,255,0.6)",
+                          textDecoration: "none",
+                          fontFamily: "JetBrains Mono",
+                          fontSize: 12,
+                          letterSpacing: "0.05em",
+                          transition: "color 0.2s ease",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = roleColor.main)}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(248,248,255,0.6)")}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                        LinkedIn
+                      </a>
+                    )}
+                    {selectedMember.instagram && selectedMember.instagram !== "#" && (
+                      <a
+                        href={selectedMember.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "rgba(248,248,255,0.6)",
+                          textDecoration: "none",
+                          fontFamily: "JetBrains Mono",
+                          fontSize: 12,
+                          letterSpacing: "0.05em",
+                          transition: "color 0.2s ease",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = roleColor.main)}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(248,248,255,0.6)")}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                        </svg>
+                        Instagram
+                      </a>
+                    )}
+                  </motion.div>
                 </div>
 
                 {/* Right column: full-bleed portrait */}
@@ -1422,16 +1303,34 @@ export default function Committee() {
                     overflow: "hidden",
                   }}
                 >
-                  <img
-                    src={selectedMember.image}
-                    alt={selectedMember.name}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
+                  {selectedMember.image ? (
+                    <img
+                      src={selectedMember.image}
+                      alt={selectedMember.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        background: "rgba(255,255,255,0.03)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "rgba(255,255,255,0.1)",
+                        fontSize: 72,
+                        fontFamily: "Outfit",
+                      }}
+                    >
+                      {selectedMember.name.charAt(0)}
+                    </div>
+                  )}
                   {/* Blend the image into the panel on its inner edge */}
                   <div
                     style={{

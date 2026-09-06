@@ -4,21 +4,22 @@ import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'fra
 import CustomCursor from '../components/CustomCursor'
 import QuantumBackground from '../components/QuantumBackground'
 import Navigation from '../components/Navigation'
-import SoundToggle from '../components/SoundToggle'
-import Login from '../pages/Login'
+import Login from '../extras/Login'
+import LiquidEther from '../components/LiquidEther';
 
 // 1. IMPORT INITIAL ARTICLES DATA
-import { articles as initialArticles } from '../data'
+import { articles as initialArticles } from '../data/articles/articles'
 
 const Home = lazy(() => import('../pages/Home'))
 const Events = lazy(() => import('../pages/Events'))
+const EventDetails = lazy(() => import('../pages/EventDetails'))
 const Articles = lazy(() => import('../pages/Articles'))
 const ArticleDetail = lazy(() => import('../pages/ArticleDetail'))
-const CreateArticle = lazy(() => import('../pages/CreateArticle'))
+const CreateArticle = lazy(() => import('../extras/CreateArticle'))
 const Projects = lazy(() => import('../pages/Projects'))
 const Committee = lazy(() => import('../pages/Committee'))
 const LogoExplain = lazy(() => import('../pages/LogoExplain'))
-const Continue = lazy(() => import('../pages/Continue')) // Checkpoint/Role selection page
+const Continue = lazy(() => import('../extras/Continue')) // Checkpoint/Role selection page
 
 function PageLoader() {
   return (
@@ -28,6 +29,7 @@ function PageLoader() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '20px',
       }}
     >
       <motion.div
@@ -65,6 +67,7 @@ interface AnimatedRoutesProps {
   onArticleCreated: (newArticle: any) => void
   onApproveArticle: (id: string | number) => void
   onRejectArticle: (id: string | number) => void
+  isMobile: boolean
 }
 
 function AnimatedRoutes({
@@ -74,6 +77,7 @@ function AnimatedRoutes({
   onArticleCreated,
   onApproveArticle,
   onRejectArticle,
+  isMobile,
 }: AnimatedRoutesProps) {
   const location = useLocation()
   const { scrollYProgress } = useScroll()
@@ -87,7 +91,7 @@ function AnimatedRoutes({
           position: 'fixed',
           top: 0,
           left: 0,
-          height: 3,
+          height: isMobile ? 2 : 3,
           zIndex: 1100,
           background: 'linear-gradient(90deg, #8b5cf6, #22d3ee)',
           transformOrigin: 'left center',
@@ -127,12 +131,23 @@ function AnimatedRoutes({
             }
           />
 
+          {/* EVENTS ROUTES */}
           <Route
             path="/events"
             element={
               <PageTransition>
                 <Suspense fallback={<PageLoader />}>
                   <Events />
+                </Suspense>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/events/:id"
+            element={
+              <PageTransition>
+                <Suspense fallback={<PageLoader />}>
+                  <EventDetails />
                 </Suspense>
               </PageTransition>
             }
@@ -177,7 +192,7 @@ function AnimatedRoutes({
             element={
               <PageTransition>
                 <Suspense fallback={<PageLoader />}>
-                  <ArticleDetail articlesData={articles} />
+                  <ArticleDetail articles={articles} />
                 </Suspense>
               </PageTransition>
             }
@@ -283,7 +298,40 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
       <div style={{ minHeight: '100vh', background: '#03030f', position: 'relative' }}>
 
         <QuantumBackground />
-        <CustomCursor />
+        {!isMobile && <CustomCursor />}
+
+        {/* Liquid Ether - Background effect for all pages */}
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100vh', 
+          zIndex: 0,
+          pointerEvents: 'none',
+          opacity: 0.12
+        }}>
+          <LiquidEther
+            colors={['#5227FF', '#FF9FFC', '#B497CF']}
+            mouseForce={isMobile ? 10 : 20}
+            cursorSize={isMobile ? 50 : 100}
+            isViscous
+            viscous={30}
+            iterationsViscous={32}
+            iterationsPoisson={32}
+            resolution={isMobile ? 0.8 : 0.5}
+            isBounce={false}
+            autoDemo
+            autoSpeed={0.5}
+            autoIntensity={2.2}
+            takeoverDuration={0.25}
+            autoResumeDelay={3000}
+            autoRampDuration={0.6}
+            color0="#5227FF"
+            color1="#FF9FFC"
+            color2="#B497CF"
+          />
+        </div>
 
         {/* Noise overlay */}
         <div
@@ -312,8 +360,8 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
               position: 'absolute',
               top: '-20%',
               right: '-10%',
-              width: '60vw',
-              height: '60vw',
+              width: isMobile ? '80vw' : '60vw',
+              height: isMobile ? '80vw' : '60vw',
               background:
                 'radial-gradient(ellipse, rgba(124,58,237,0.08) 0%, transparent 70%)',
               animation: 'aurora 20s ease-in-out infinite',
@@ -324,8 +372,8 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
               position: 'absolute',
               bottom: '-20%',
               left: '-10%',
-              width: '50vw',
-              height: '50vw',
+              width: isMobile ? '70vw' : '50vw',
+              height: isMobile ? '70vw' : '50vw',
               background:
                 'radial-gradient(ellipse, rgba(217,70,239,0.06) 0%, transparent 70%)',
               animation: 'aurora 25s ease-in-out infinite reverse',
@@ -334,10 +382,7 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
         </div>
 
         {/* Navigation */}
-        <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 1100 }}>
-          <SoundToggle />
-        </div>
-        <Navigation />
+        <Navigation isMobile={isMobile} />
 
         {/* Main content */}
         <main style={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
@@ -348,6 +393,7 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
             onArticleCreated={handleAddArticle}
             onApproveArticle={handleApproveArticle}
             onRejectArticle={handleRejectArticle}
+            isMobile={isMobile}
           />
         </main>
 
@@ -384,7 +430,7 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
               position: 'relative',
               zIndex: 1,
               borderTop: '1px solid rgba(196,181,253,0.06)',
-              padding: '40px 24px',
+              padding: isMobile ? '24px 16px' : '40px 24px',
               textAlign: 'center',
             }}
           >
@@ -396,20 +442,21 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: 16,
+                gap: isMobile ? 12 : 16,
+                flexDirection: isMobile ? 'column' : 'row',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div
                   style={{
-                    width: 28,
-                    height: 28,
+                    width: isMobile ? 24 : 28,
+                    height: isMobile ? 24 : 28,
                     background: 'linear-gradient(135deg, #7c3aed, #d946ef)',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 13,
+                    fontSize: isMobile ? 11 : 13,
                     color: '#fff',
                     fontFamily: 'JetBrains Mono',
                     boxShadow: '0 0 10px rgba(124,58,237,0.4)',
@@ -421,7 +468,7 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
                   style={{
                     fontFamily: 'Outfit',
                     fontWeight: 700,
-                    fontSize: 16,
+                    fontSize: isMobile ? 14 : 16,
                     color: '#c4b5fd',
                   }}
                 >
@@ -431,9 +478,10 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
               <p
                 style={{
                   fontFamily: 'Inter',
-                  fontSize: 12,
+                  fontSize: isMobile ? 10 : 12,
                   color: 'rgba(248,248,255,0.25)',
                   letterSpacing: '0.02em',
+                  textAlign: 'center',
                 }}
               >
                 Society of Quantum Computing · {new Date().getFullYear()}
@@ -441,7 +489,7 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
               <p
                 style={{
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 11,
+                  fontSize: isMobile ? 10 : 11,
                   color: 'rgba(248,248,255,0.2)',
                   letterSpacing: '0.1em',
                 }}

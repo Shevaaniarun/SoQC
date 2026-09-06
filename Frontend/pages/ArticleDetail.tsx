@@ -1,31 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
-import { articles } from '../data'
+import { articles } from '../data/articles/articles'
 
 interface ArticleDetailProps {
-  articleId?: string | number
   onBack?: () => void
-  onSelectArticle?: (id: string | number) => void
+  isMobile?: boolean
 }
 
-export default function ArticleDetail({ articleId: propArticleId, onBack, onSelectArticle }: ArticleDetailProps) {
+export default function ArticleDetail({ onBack, isMobile }: ArticleDetailProps) {
   const { id: urlId } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  // Prioritize prop articleId if passed, otherwise grab from URL params
-  const targetId = propArticleId ?? urlId
+  // Reset scroll position to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [urlId]) // Also reset when article ID changes
 
   // Find the exact matching article
-  const article = articles.find(a => String(a.id) === String(targetId))
-
-  const [likes, setLikes] = useState(42)
-  const [hasLiked, setHasLiked] = useState(false)
-  const [commentText, setCommentText] = useState('')
-  const [comments, setComments] = useState([
-    { id: 1, author: 'Dr. Evelyn Carter', text: 'Excellent overview! The section on decoherence was remarkably clear.', date: '2 days ago' },
-    { id: 2, author: 'Alex Rivera', text: 'Looking forward to seeing how this develops over the next few years.', date: '1 day ago' },
-  ])
+  const article = articles.find(a => String(a.id) === String(urlId))
 
   // Navigation handlers
   const handleBack = () => {
@@ -36,21 +29,20 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
     }
   }
 
-  const handleSelectRelated = (id: string | number) => {
-    if (onSelectArticle) {
-      onSelectArticle(id)
-    } else {
-      navigate(`/articles/${id}`)
-    }
-  }
-
   // Handle 404 / Missing Article
   if (!article) {
     return (
-      <div style={{ minHeight: '100vh', paddingTop: 140, textAlign: 'center', color: '#fff' }}>
-        <h2 style={{ fontFamily: 'Outfit', fontSize: 28 }}>Article Not Found</h2>
+      <div style={{ 
+        minHeight: '100vh', 
+        paddingTop: isMobile ? 100 : 140, 
+        textAlign: 'center', 
+        color: '#fff',
+        paddingLeft: 20,
+        paddingRight: 20
+      }}>
+        <h2 style={{ fontFamily: 'Outfit', fontSize: isMobile ? 24 : 28 }}>Article Not Found</h2>
         <p style={{ color: 'rgba(248,248,255,0.5)', marginTop: 12, fontFamily: 'Inter' }}>
-          The requested article ID ({String(targetId)}) could not be found.
+          The requested article could not be found.
         </p>
         <button
           onClick={handleBack}
@@ -71,40 +63,28 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
     )
   }
 
-  // Get up to 3 related articles (excluding current one)
-  const relatedArticles = articles
-    .filter(a => String(a.id) !== String(article.id))
-    .slice(0, 3)
-
-  const handleLike = () => {
-    if (hasLiked) {
-      setLikes(prev => prev - 1)
-      setHasLiked(false)
-    } else {
-      setLikes(prev => prev + 1)
-      setHasLiked(true)
-    }
-  }
-
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!commentText.trim()) return
-    setComments(prev => [
-      ...prev,
-      { id: Date.now(), author: 'You', text: commentText, date: 'Just now' }
-    ])
-    setCommentText('')
-  }
-
   return (
-    <div style={{ minHeight: '100vh', paddingTop: 100, paddingBottom: 120, position: 'relative', zIndex: 1 }}>
-      <div style={{ maxWidth: 840, margin: '0 auto', padding: '0 24px' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      paddingTop: isMobile ? 80 : 100, 
+      paddingBottom: isMobile ? 60 : 120, 
+      position: 'relative', 
+      zIndex: 1 
+    }}>
+      <div style={{ maxWidth: 840, margin: '0 auto', padding: isMobile ? '0 16px' : '0 24px' }}>
         
         {/* Navigation & Category */}
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: isMobile ? 24 : 32,
+            flexWrap: 'wrap',
+            gap: 12
+          }}
         >
           <button
             onClick={handleBack}
@@ -113,16 +93,16 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
               border: '1px solid rgba(196,181,253,0.2)',
               color: '#c4b5fd',
               borderRadius: 100,
-              padding: '8px 18px',
+              padding: isMobile ? '6px 14px' : '8px 18px',
               fontFamily: 'Inter',
-              fontSize: 13,
+              fontSize: isMobile ? 12 : 13,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: 6
             }}
           >
-            ← Back to Articles
+            ← Back
           </button>
           
           <span style={{
@@ -130,7 +110,7 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
             background: 'rgba(168,85,247,0.15)',
             border: '1px solid rgba(196,181,253,0.2)',
             borderRadius: 100,
-            fontSize: 11,
+            fontSize: isMobile ? 10 : 11,
             color: '#c4b5fd',
             fontFamily: 'JetBrains Mono'
           }}>
@@ -143,26 +123,26 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          style={{ marginBottom: 40 }}
+          style={{ marginBottom: isMobile ? 28 : 40 }}
         >
           <h1 style={{
             fontFamily: 'Outfit',
-            fontSize: 'clamp(32px, 5vw, 52px)',
+            fontSize: isMobile ? 'clamp(28px, 6vw, 40px)' : 'clamp(32px, 5vw, 52px)',
             fontWeight: 800,
             color: '#fff',
             lineHeight: 1.15,
             letterSpacing: '-0.02em',
-            marginBottom: 24
+            marginBottom: isMobile ? 16 : 24
           }}>
             {article.title}
           </h1>
 
           <p style={{
             fontFamily: 'Inter',
-            fontSize: 18,
+            fontSize: isMobile ? 15 : 18,
             lineHeight: 1.6,
             color: 'rgba(248,248,255,0.7)',
-            marginBottom: 32
+            marginBottom: isMobile ? 24 : 32
           }}>
             {article.excerpt}
           </p>
@@ -172,15 +152,17 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: 20,
+            paddingTop: isMobile ? 16 : 20,
             borderTop: '1px solid rgba(196,181,253,0.1)',
             borderBottom: '1px solid rgba(196,181,253,0.1)',
-            paddingBottom: 20
+            paddingBottom: isMobile ? 16 : 20,
+            flexWrap: 'wrap',
+            gap: 12
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
-                width: 44,
-                height: 44,
+                width: isMobile ? 36 : 44,
+                height: isMobile ? 36 : 44,
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
                 display: 'flex',
@@ -188,21 +170,22 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
                 justifyContent: 'center',
                 color: '#fff',
                 fontWeight: 700,
-                fontFamily: 'Outfit'
+                fontFamily: 'Outfit',
+                fontSize: isMobile ? 14 : 18
               }}>
                 {article.author ? article.author.charAt(0) : 'A'}
               </div>
               <div>
-                <div style={{ color: '#fff', fontFamily: 'Inter', fontWeight: 600, fontSize: 14 }}>
+                <div style={{ color: '#fff', fontFamily: 'Inter', fontWeight: 600, fontSize: isMobile ? 13 : 14 }}>
                   {article.author}
                 </div>
-                <div style={{ color: 'rgba(248,248,255,0.4)', fontFamily: 'Inter', fontSize: 12 }}>
+                <div style={{ color: 'rgba(248,248,255,0.4)', fontFamily: 'Inter', fontSize: isMobile ? 11 : 12 }}>
                   {new Date(article.date).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             </div>
 
-            <div style={{ color: '#c4b5fd', fontFamily: 'JetBrains Mono', fontSize: 12 }}>
+            <div style={{ color: '#c4b5fd', fontFamily: 'JetBrains Mono', fontSize: isMobile ? 11 : 12 }}>
               ⏱️ {article.readTime}
             </div>
           </div>
@@ -214,10 +197,10 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
           style={{
-            height: 420,
-            borderRadius: 24,
+            height: isMobile ? 220 : 420,
+            borderRadius: isMobile ? 16 : 24,
             overflow: 'hidden',
-            marginBottom: 48,
+            marginBottom: isMobile ? 32 : 48,
             border: '1px solid rgba(196,181,253,0.15)'
           }}
         >
@@ -236,51 +219,64 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
           style={{
             color: 'rgba(248,248,255,0.85)',
             fontFamily: 'Inter',
-            fontSize: 17,
+            fontSize: isMobile ? 15 : 17,
             lineHeight: 1.8,
-            marginBottom: 60,
-            whiteSpace: 'pre-line' // Respects line breaks in article.content
+            marginBottom: isMobile ? 40 : 60,
+            whiteSpace: 'pre-line'
           }}
         >
-          {article.content || (
+          {article.excerpt || (
             <>
               <p style={{ marginBottom: 24 }}>{article.excerpt}</p>
-              <p>Detailed article content goes here...</p>
+              <p>Explore more about {article.title} and its implications in the quantum computing landscape.</p>
             </>
           )}
         </motion.main>
 
-        {/* Interactive Action Bar */}
+        {/* Tags */}
+        {article.tags && article.tags.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ 
+              fontFamily: 'Inter', 
+              fontSize: 12, 
+              color: 'rgba(248,248,255,0.4)',
+              marginBottom: 12,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em'
+            }}>
+              Tags
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {article.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: 100,
+                    background: 'rgba(124,58,237,0.1)',
+                    border: '1px solid rgba(196,181,253,0.1)',
+                    color: 'rgba(196,181,253,0.7)',
+                    fontFamily: 'JetBrains Mono',
+                    fontSize: 11,
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Share Button */}
         <div style={{
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          justifyContent: 'center',
           padding: '20px 24px',
           background: 'rgba(124,58,237,0.05)',
           border: '1px solid rgba(196,181,253,0.1)',
           borderRadius: 16,
           marginBottom: 60
         }}>
-          <button
-            onClick={handleLike}
-            style={{
-              background: hasLiked ? 'rgba(168,85,247,0.3)' : 'transparent',
-              border: '1px solid rgba(196,181,253,0.2)',
-              color: hasLiked ? '#fff' : '#c4b5fd',
-              padding: '8px 20px',
-              borderRadius: 100,
-              cursor: 'pointer',
-              fontFamily: 'Inter',
-              fontSize: 14,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              transition: 'all 0.2s ease'
-            }}
-          >
-            {hasLiked ? '❤️ Liked' : '🤍 Like'} ({likes})
-          </button>
-
           <button
             onClick={() => {
               navigator.clipboard.writeText(window.location.href)
@@ -292,7 +288,7 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
               color: 'rgba(248,248,255,0.6)',
               cursor: 'pointer',
               fontFamily: 'Inter',
-              fontSize: 14,
+              fontSize: isMobile ? 13 : 14,
               display: 'flex',
               alignItems: 'center',
               gap: 6
@@ -301,100 +297,6 @@ export default function ArticleDetail({ articleId: propArticleId, onBack, onSele
             🔗 Share Article
           </button>
         </div>
-
-        {/* Comments Section */}
-        <section style={{ marginBottom: 80 }}>
-          <h3 style={{ fontFamily: 'Outfit', color: '#fff', fontSize: 22, fontWeight: 700, marginBottom: 24 }}>
-            Discussion ({comments.length})
-          </h3>
-
-          <form onSubmit={handleAddComment} style={{ marginBottom: 32 }}>
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Join the conversation..."
-              rows={3}
-              style={{
-                width: '100%',
-                padding: 16,
-                background: 'rgba(0,0,0,0.3)',
-                border: '1px solid rgba(196,181,253,0.15)',
-                borderRadius: 12,
-                color: '#fff',
-                fontFamily: 'Inter',
-                fontSize: 14,
-                outline: 'none',
-                resize: 'none',
-                marginBottom: 12
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                color: '#fff',
-                border: 'none',
-                padding: '10px 24px',
-                borderRadius: 8,
-                fontFamily: 'Inter',
-                fontWeight: 600,
-                fontSize: 13,
-                cursor: 'pointer'
-              }}
-            >
-              Post Comment
-            </button>
-          </form>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {comments.map(c => (
-              <div key={c.id} style={{
-                padding: 16,
-                background: 'rgba(124,58,237,0.03)',
-                border: '1px solid rgba(196,181,253,0.08)',
-                borderRadius: 12
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ color: '#c4b5fd', fontFamily: 'Inter', fontWeight: 600, fontSize: 13 }}>{c.author}</span>
-                  <span style={{ color: 'rgba(248,248,255,0.3)', fontFamily: 'Inter', fontSize: 11 }}>{c.date}</span>
-                </div>
-                <p style={{ color: 'rgba(248,248,255,0.7)', fontFamily: 'Inter', fontSize: 14 }}>{c.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Related Articles */}
-        <section style={{ borderTop: '1px solid rgba(196,181,253,0.1)', paddingTop: 40 }}>
-          <h3 style={{ fontFamily: 'Outfit', color: '#fff', fontSize: 22, fontWeight: 700, marginBottom: 24 }}>
-            Related Articles
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
-            {relatedArticles.map(rel => (
-              <div
-                key={rel.id}
-                onClick={() => handleSelectRelated(rel.id)}
-                style={{
-                  background: 'rgba(124,58,237,0.05)',
-                  border: '1px solid rgba(196,181,253,0.08)',
-                  borderRadius: 16,
-                  padding: 16,
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease'
-                }}
-              >
-                <div style={{ height: 120, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
-                  <img src={rel.image} alt={rel.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <h4 style={{ fontFamily: 'Outfit', color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 8, lineHeight: 1.3 }}>
-                  {rel.title}
-                </h4>
-                <span style={{ color: '#a855f7', fontFamily: 'JetBrains Mono', fontSize: 11 }}>{rel.readTime}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
       </div>
     </div>
   )

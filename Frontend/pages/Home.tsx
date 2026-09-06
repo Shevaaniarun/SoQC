@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Sphere, MeshDistortMaterial, Float, Stars } from '@react-three/drei'
 import * as THREE from 'three'
-import { events, articles } from '../data'
+import { articles } from '../data/articles/articles'
+import { events } from '../data/events/events'
 import { useMousePosition } from '../hooks/useMousePosition'
 
 /* ─── 3D Hero Globe ─────────────────────────────────── */
@@ -679,7 +680,7 @@ export default function Home() {
                   </p>
                 </div>
                 <a
-                  href="https://chat.whatsapp.com/"
+                  href="https://chat.whatsapp.com/ISr5PjCc5B348ctJSBkKEj?mode=wwc"
                   target="_blank"
                   rel="noreferrer"
                   style={{

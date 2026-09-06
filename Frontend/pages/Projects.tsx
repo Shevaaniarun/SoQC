@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { projects } from '../data'
+import { projects } from '../data/projects/projects'
 
 function ArchitectureFlow({ nodes }: { nodes: string[] }) {
   return (

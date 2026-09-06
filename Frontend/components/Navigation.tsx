@@ -11,7 +11,7 @@ const navItems = [
   { path: '/logo', label: 'Logo', symbol: '∞' },
 ]
 
-export default function Navigation() {
+export default function Navigation({ isMobile }: { isMobile: boolean }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -35,7 +35,7 @@ export default function Navigation() {
         style={{
           position: 'fixed',
           top: 20,
-          left: '25%',
+          left: isMobile ? '5%' : '25%',
           transform: 'translateX(-50%)',
           zIndex: 1000,
           width: 'min(900px, calc(100vw - 40px))',
@@ -128,7 +128,7 @@ export default function Navigation() {
 
           {/* CTA */}
           <motion.a
-            href="https://chat.whatsapp.com/"
+            href="https://chat.whatsapp.com/ISr5PjCc5B348ctJSBkKEj?mode=wwc"
             target="_blank"
             rel="noreferrer"
             whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(124,58,237,0.6)' }}
