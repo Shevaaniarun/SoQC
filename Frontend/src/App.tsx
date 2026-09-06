@@ -192,7 +192,7 @@ function AnimatedRoutes({
             element={
               <PageTransition>
                 <Suspense fallback={<PageLoader />}>
-                  <ArticleDetail articles={articles} />
+                  <ArticleDetail />
                 </Suspense>
               </PageTransition>
             }
@@ -327,9 +327,6 @@ function AppContent({ isMobile }: { isMobile: boolean }) {
             takeoverDuration={0.25}
             autoResumeDelay={3000}
             autoRampDuration={0.6}
-            color0="#5227FF"
-            color1="#FF9FFC"
-            color2="#B497CF"
           />
         </div>
 

@@ -524,7 +524,7 @@ export default function Home() {
                     }}
                   >
                     <div style={{ height: 180, overflow: 'hidden', position: 'relative' }}>
-                      <img src={event.image} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={event.image[0]} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div style={{
                         position: 'absolute',
                         inset: 0,
