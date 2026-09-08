@@ -60,26 +60,31 @@ export default function Navigation({ isMobile }: { isMobile: boolean }) {
               : 'none',
           }}
         >
-          {/* Logo */}
+
           <NavLink to="/" style={{ textDecoration: 'none' }}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-            >
-              <div style={{
-                width: 32,
-                height: 32,
-                background: 'linear-gradient(135deg, #7c3aed, #d946ef)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 16px rgba(124,58,237,0.5)',
-                fontSize: 14,
-                color: '#fff',
-                fontFamily: 'JetBrains Mono',
-              }}>ψ</div>
-              <span style={{
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              position: 'relative',
+            }}
+          >
+            <img
+              src="../data/logo/soqc-logo-step-4.png"
+              alt="SoQC"
+              style={{
+                width: 68,
+                height: 68,
+                objectFit: 'contain',
+                display: 'block',
+                margin: '-18px 0',
+              }}
+            />
+
+            <span
+              style={{
                 fontFamily: 'Outfit',
                 fontWeight: 700,
                 fontSize: 18,
@@ -88,9 +93,12 @@ export default function Navigation({ isMobile }: { isMobile: boolean }) {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
                 letterSpacing: '-0.02em',
-              }}>SoQC</span>
-            </motion.div>
-          </NavLink>
+              }}
+            >
+              SoQC
+            </span>
+          </motion.div>
+        </NavLink>
 
           {/* Desktop nav */}
           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}
