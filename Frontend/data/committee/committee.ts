@@ -1,4 +1,3 @@
-
 export const roleColors = {
   Chairperson: {
     main: "#FBBF24",
@@ -65,8 +64,7 @@ export const committee = {
     interests: [],
     quote: "",
     instagram: "NA",
-    linkedin:
-      "http://www.linkedin.com/in/jeffrin-edward-2b196a276",
+    linkedin: "http://www.linkedin.com/in/jeffrin-edward-2b196a276",
 
     // Google Drive FILE ID:
     // 1PFj4g_ryRdnDhvJzD8bRsPWZNx4DtF_G
@@ -85,8 +83,7 @@ export const committee = {
       quote: "",
       instagram: "https://www.instagram.com/____yash8____/",
       instagramLabel: "Instagram",
-      linkedin:
-        "https://www.linkedin.com/in/anantha-yashwanth-g-81669b316",
+      linkedin: "https://www.linkedin.com/in/anantha-yashwanth-g-81669b316",
       linkedinLabel: "Anantha yashwanth G | LinkedIn",
 
       // Google Drive FILE ID:
@@ -103,10 +100,8 @@ export const committee = {
       dept: "VLSI",
       interests: [],
       quote: "Wave function of questionable decisions ✌️",
-      instagram:
-        "https://www.instagram.com/vears_v?igsi=MXBsYjRtaGlmZ2N2cA==",
-      linkedin:
-        "https://www.linkedin.com/in/varshini-g-691b581b8",
+      instagram: "https://www.instagram.com/vears_v?igsi=MXBsYjRtaGlmZ2N2cA==",
+      linkedin: "https://www.linkedin.com/in/varshini-g-691b581b8",
 
       // Google Drive FILE ID:
       // 14-iGDc0ygP26qphHJ88919MZiXOlWnoQ
@@ -123,8 +118,7 @@ export const committee = {
       interests: [],
       quote: "Between 0 and 1 lies every lesson learnt.",
       instagram: "https://www.instagram.com/dannkev5/",
-      linkedin:
-        "https://www.linkedin.com/in/danish-kevin-b33254240/",
+      linkedin: "https://www.linkedin.com/in/danish-kevin-b33254240/",
       linkedinLabel: "Danish Kevin | LinkedIn",
 
       // WARNING:
@@ -140,12 +134,9 @@ export const committee = {
       year: "IV",
       dept: "CSE",
       interests: [],
-      quote:
-        "Sometimes default clock speed is mistaken for panic mode.",
-      instagram:
-        "https://www.instagram.com/shevs_3?stkn=bXF6OXYwODJnMmdk",
-      linkedin:
-        "https://www.linkedin.com/in/shevaani-arun-12aa2828b/",
+      quote: "Sometimes default clock speed is mistaken for panic mode.",
+      instagram: "https://www.instagram.com/shevs_3?stkn=bXF6OXYwODJnMmdk",
+      linkedin: "https://www.linkedin.com/in/shevaani-arun-12aa2828b/",
 
       // No image was supplied.
       image: "",
@@ -159,10 +150,8 @@ export const committee = {
       dept: "CSE",
       interests: [],
       quote: "",
-      instagram:
-        "https://www.instagram.com/_jenn_1154/",
-      linkedin:
-        "https://www.linkedin.com/in/jenny-alice-n-808429298/",
+      instagram: "https://www.instagram.com/_jenn_1154/",
+      linkedin: "https://www.linkedin.com/in/jenny-alice-n-808429298/",
 
       // Google Drive FILE ID:
       // 1AJvJ1ddPJj-pmjtaMEvZtOmHtipzrR7-
@@ -179,10 +168,8 @@ export const committee = {
       interests: [],
       quote:
         "My productivity exists in superposition — deadlines are what collapse it",
-      instagram:
-        "https://www.instagram.com/danish_30052007/",
-      linkedin:
-        "http://www.linkedin.com/in/danish-ceg",
+      instagram: "https://www.instagram.com/danish_30052007/",
+      linkedin: "http://www.linkedin.com/in/danish-ceg",
 
       // WARNING:
       // This is a Google Drive FOLDER, not an image file.
@@ -247,10 +234,13 @@ export const committee = {
       year: "II",
       dept: "CSE",
       interests: [],
-      quote: "",
-      instagram: "",
-      linkedin: "",
-      image: "",
+      quote: "Don't chase butterflies, grow gardens.",
+      instagram: "https://www.instagram.com/sophie_.bash/",
+      linkedin: "www.linkedin.com/in/thin-htet-htet-soe-05b838244",
+      // Google Drive FILE ID:
+      // 1DRyQrCBQKo0QEt5L5pIHbGfQ9mL4GVcJ
+      image:
+        "https://drive.google.com/uc?export=view&id=1DRyQrCBQKo0QEt5L5pIHbGfQ9mL4GVcJ",
     },
 
     {
@@ -274,8 +264,7 @@ export const committee = {
       year: "II",
       dept: "CSE",
       interests: [],
-      quote:
-        "Entangled with curiosity,evolving with every possibility",
+      quote: "Entangled with curiosity,evolving with every possibility",
       instagram:
         "https://www.instagram.com/varsha._.krishnamoorthy?igsi=cnB3cTFtMGRybGFr",
       linkedin:
@@ -294,12 +283,9 @@ export const committee = {
       year: "II",
       dept: "CSE",
       interests: [],
-      quote:
-        "Jack of all states, collapse at none",
-      instagram:
-        "https://www.instagram.com/addy021507/",
-      linkedin:
-        "https://www.linkedin.com/in/advaith-pv-956212434/",
+      quote: "Jack of all states, collapse at none",
+      instagram: "https://www.instagram.com/addy021507/",
+      linkedin: "https://www.linkedin.com/in/advaith-pv-956212434/",
 
       // Google Drive FILE ID:
       // 1KxeAdP-pKkFi7h2lFBJd8rZu1Tp2osBl
@@ -307,25 +293,25 @@ export const committee = {
         "https://drive.google.com/uc?export=view&id=1KxeAdP-pKkFi7h2lFBJd8rZu1Tp2osBl",
     },
 
-    {
-      name: "Danish",
-      role: "Director",
-      domain: "Innovations",
-      year: "III",
-      dept: "ECE",
-      interests: [],
-      quote:
-        "My productivity exists in superposition — deadlines are what collapse it",
-      instagram:
-        "https://www.instagram.com/danish_30052007/",
-      linkedin:
-        "http://www.linkedin.com/in/danish-ceg",
+    // {
+    //   name: "Danish",
+    //   role: "Director",
+    //   domain: "Innovations",
+    //   year: "III",
+    //   dept: "ECE",
+    //   interests: [],
+    //   quote:
+    //     "My productivity exists in superposition — deadlines are what collapse it",
+    //   instagram:
+    //     "https://www.instagram.com/danish_30052007/",
+    //   linkedin:
+    //     "http://www.linkedin.com/in/danish-ceg",
 
-      // WARNING:
-      // This is a Google Drive FOLDER, not an image file.
-      // Replace this with the actual image FILE ID.
-      image: "",
-    },
+    //   // WARNING:
+    //   // This is a Google Drive FOLDER, not an image file.
+    //   // Replace this with the actual image FILE ID.
+    //   image: "",
+    // },
 
     {
       name: "Ayush",
@@ -334,10 +320,8 @@ export const committee = {
       year: "II",
       dept: "CSE",
       interests: [],
-      quote:
-        "No matter the distance, may our souls remain entangled as one.",
-      instagram:
-        "https://www.instagram.com/dp_king42069?igsi=dmJjOWhpZWtpOXUw",
+      quote: "No matter the distance, may our souls remain entangled as one.",
+      instagram: "https://www.instagram.com/dp_king42069?igsi=dmJjOWhpZWtpOXUw",
       linkedin:
         "https://www.linkedin.com/in/ayush-radhakrishnan-b67543373?utm_source=share_via&utm_content=profile&utm_medium=member_android",
 
@@ -355,10 +339,8 @@ export const committee = {
       dept: "VLSI",
       interests: [],
       quote: "",
-      instagram:
-        "https://www.instagram.com/messyniladri?igsi=eHM4MmlwN2hkajJj",
-      linkedin:
-        "https://www.linkedin.com/in/niladriroykundu",
+      instagram: "https://www.instagram.com/messyniladri?igsi=eHM4MmlwN2hkajJj",
+      linkedin: "https://www.linkedin.com/in/niladriroykundu",
 
       // WARNING:
       // This is a Google Drive FOLDER, not an image file.
@@ -382,15 +364,11 @@ export const getAllMembers = () => {
 };
 
 export const getMembersByRole = (role: string) => {
-  return getAllMembers().filter(
-    (member) => member.role === role
-  );
+  return getAllMembers().filter((member) => member.role === role);
 };
 
 export const getMembersByDomain = (domain: string) => {
-  return getAllMembers().filter(
-    (member) => member.domain === domain
-  );
+  return getAllMembers().filter((member) => member.domain === domain);
 };
 
 // ------------------------------------------------------------
@@ -402,7 +380,7 @@ export const getDomainGroups = () => {
     domain: director.domain,
     director,
     deputies: committee.deputies.filter(
-      (deputy) => deputy.domain === director.domain
+      (deputy) => deputy.domain === director.domain,
     ),
   }));
 };
