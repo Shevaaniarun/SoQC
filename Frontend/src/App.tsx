@@ -239,7 +239,7 @@ function AnimatedRoutes({
             element={
               <PageTransition>
                 <Suspense fallback={<PageLoader />}>
-                  <LogoExplain />
+                  <LogoExplain isMobile={isMobile} />
                 </Suspense>
               </PageTransition>
             }
