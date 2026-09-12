@@ -176,6 +176,7 @@ function AnimatedRoutes({
                     articlesData={articles}
                     onApproveArticle={onApproveArticle}
                     onRejectArticle={onRejectArticle}
+                    isMobile={isMobile}
                   />
                 </Suspense>
               </PageTransition>
@@ -218,7 +219,7 @@ function AnimatedRoutes({
             element={
               <PageTransition>
                 <Suspense fallback={<PageLoader />}>
-                  <Projects />
+                  <Projects isMobile={isMobile} />
                 </Suspense>
               </PageTransition>
             }
