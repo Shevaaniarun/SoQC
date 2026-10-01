@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { PauseIcon, PlayIcon, ArrowRight, ArrowLeft} from "lucide-react";
+import { PauseIcon, PlayIcon, ArrowRight, ArrowLeft } from "lucide-react";
 
 /*
 |--------------------------------------------------------------------------
@@ -77,21 +77,13 @@ function QuantumOrb() {
   useFrame(({ clock }) => {
     if (groupRef.current) {
       groupRef.current.rotation.y = clock.elapsedTime * 0.3;
-      groupRef.current.rotation.x =
-        Math.sin(clock.elapsedTime * 0.2) * 0.15;
+      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.2) * 0.15;
     }
   });
 
   return (
     <group ref={groupRef}>
-      <Stars
-        radius={60}
-        depth={30}
-        count={2000}
-        factor={3}
-        fade
-        speed={0.3}
-      />
+      <Stars radius={60} depth={30} count={2000} factor={3} fade speed={0.3} />
 
       <pointLight
         color="#7c3aed"
@@ -118,7 +110,11 @@ function QuantumOrb() {
 |--------------------------------------------------------------------------
 */
 
-export default function LogoExplain() {
+interface LogoExplainProps {
+  isMobile: boolean;
+}
+
+export default function LogoExplain({ isMobile }: LogoExplainProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [isPlaying, setIsPlaying] = useState(true);
 
@@ -258,6 +254,7 @@ export default function LogoExplain() {
             letterSpacing: "-0.04em",
             lineHeight: 0.95,
             marginBottom: 24,
+            paddingBottom: 10,
           }}
         >
           Decoding
@@ -293,8 +290,10 @@ export default function LogoExplain() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(420px, 1fr) minmax(340px, 0.9fr)",
-            gap: 70,
+            gridTemplateColumns: isMobile
+              ? "minmax(0, 1fr)"
+              : "minmax(420px, 1fr) minmax(340px, 0.9fr)",
+            gap: isMobile ? 60 : 70,
             alignItems: "center",
           }}
         >
@@ -353,6 +352,7 @@ export default function LogoExplain() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                height: "content-fit",
               }}
             >
               <AnimatePresence mode="wait">
@@ -504,8 +504,8 @@ export default function LogoExplain() {
                           color: isActive
                             ? "#ffffff"
                             : isCompleted
-                            ? "#a855f7"
-                            : "rgba(248,248,255,0.35)",
+                              ? "#a855f7"
+                              : "rgba(248,248,255,0.35)",
                         }}
                       >
                         {String(step.id).padStart(2, "0")}
@@ -544,9 +544,7 @@ export default function LogoExplain() {
                       <div
                         style={{
                           fontSize: 14,
-                          color: isActive
-                            ? "#c4b5fd"
-                            : "rgba(248,248,255,0.2)",
+                          color: isActive ? "#c4b5fd" : "rgba(248,248,255,0.2)",
                         }}
                       >
                         {isActive ? "●" : "○"}
@@ -621,8 +619,7 @@ export default function LogoExplain() {
                 }}
                 style={{
                   height: "100%",
-                  background:
-                    "linear-gradient(90deg, #7c3aed, #c4b5fd)",
+                  background: "linear-gradient(90deg, #7c3aed, #c4b5fd)",
                   borderRadius: 999,
                 }}
               />
@@ -661,10 +658,7 @@ export default function LogoExplain() {
                   gap: 7,
                 }}
               >
-                <button
-                  onClick={goPrevious}
-                  style={controlButtonStyle}
-                >
+                <button onClick={goPrevious} style={controlButtonStyle}>
                   <ArrowLeft size={14} />
                 </button>
 
@@ -677,10 +671,7 @@ export default function LogoExplain() {
                   {isPlaying ? <PauseIcon /> : <PlayIcon />}
                 </button>
 
-                <button
-                  onClick={goNext}
-                  style={controlButtonStyle}
-                >
+                <button onClick={goNext} style={controlButtonStyle}>
                   <ArrowRight size={14} />
                 </button>
               </div>
@@ -745,9 +736,9 @@ export default function LogoExplain() {
               lineHeight: 1.8,
             }}
           >
-            What begins as mathematical notation evolves through quantum
-            states and their connections, finally becoming a symbol for the
-            technology that brings quantum computing to life.
+            What begins as mathematical notation evolves through quantum states
+            and their connections, finally becoming a symbol for the technology
+            that brings quantum computing to life.
           </p>
         </motion.div>
       </div>
