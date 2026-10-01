@@ -18,45 +18,64 @@ import QuantumBackground from "../components/QuantumBackground";
 import Navigation from "../components/Navigation";
 import Login from "../extras/Login";
 import LiquidEther from "../components/LiquidEther";
+import CyberLoader from "../components/CyberLoader";
 
 // 1. IMPORT INITIAL ARTICLES DATA
 import { articles as initialArticles } from "../data/articles/articles";
 
-const Home = lazy(() => import("../pages/Home"));
-const Events = lazy(() => import("../pages/Events"));
-const EventDetails = lazy(() => import("../pages/EventDetails"));
-const Articles = lazy(() => import("../pages/Articles"));
-const ArticleDetail = lazy(() => import("../pages/ArticleDetail"));
-const CreateArticle = lazy(() => import("../extras/CreateArticle"));
-const Projects = lazy(() => import("../pages/Projects"));
-const Committee = lazy(() => import("../pages/Committee"));
-const LogoExplain = lazy(() => import("../pages/LogoExplain"));
-const Continue = lazy(() => import("../extras/Continue")); // Checkpoint/Role selection page
+const Home = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/Home"),
+  ),
+);
+const Events = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/Events"),
+  ),
+);
+const EventDetails = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/EventDetails"),
+  ),
+);
+const Articles = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/Articles"),
+  ),
+);
+const ArticleDetail = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/ArticleDetail"),
+  ),
+);
+const CreateArticle = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../extras/CreateArticle"),
+  ),
+);
+const Projects = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/Projects"),
+  ),
+);
+const Committee = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/Committee"),
+  ),
+);
+const LogoExplain = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../pages/LogoExplain"),
+  ),
+);
+const Continue = lazy(() =>
+  new Promise((res) => setTimeout(res, 3500)).then(
+    () => import("../extras/Continue"),
+  ),
+); // Checkpoint/Role selection page
 
 function PageLoader() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-      }}
-    >
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-        style={{
-          width: 48,
-          height: 48,
-          border: "2px solid rgba(196,181,253,0.15)",
-          borderTop: "2px solid #a855f7",
-          borderRadius: "50%",
-        }}
-      />
-    </div>
-  );
+  return <CyberLoader fullScreen />;
 }
 
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -249,38 +268,26 @@ function AnimatedRoutes({
     </>
   );
 }
-interface NavCom {
-  isMobile: boolean;
-  isTablet: boolean;
-  isLTablet: boolean;
-}
+
 export default function App() {
-  const [dimensions, setDimensions] = useState({ width: 1300, height: 1000 });
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const update = () =>
-      setDimensions({ width: window.innerWidth, height: window.innerHeight });
+    const update = () => setIsMobile(window.innerWidth < 768);
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const isMobile = dimensions.width < 640;
-  const isTablet = dimensions.width >= 640 && dimensions.width < 1024;
-  const isLTablet = dimensions.width >= 640 && dimensions.width < 1200;
-
   return (
     <BrowserRouter>
-      <AppContent
-        isMobile={isMobile}
-        isTablet={isTablet}
-        isLTablet={isLTablet}
-      />
+      {/* <CyberLoader /> */}
+      <AppContent isMobile={isMobile} />
     </BrowserRouter>
   );
 }
 
-function AppContent({ isMobile, isTablet, isLTablet }: NavCom) {
+function AppContent({ isMobile }: { isMobile: boolean }) {
   const location = useLocation();
   const isImmersive =
     location.pathname === "/" || location.pathname === "/committee";
@@ -418,11 +425,7 @@ function AppContent({ isMobile, isTablet, isLTablet }: NavCom) {
         </div>
 
         {/* Navigation */}
-        <Navigation
-          isMobile={isMobile}
-          isTablet={isTablet}
-          isLTablet={isLTablet}
-        />
+        <Navigation isMobile={isMobile} />
 
         {/* Main content */}
         <main style={{ position: "relative", zIndex: 1, minHeight: "100vh" }}>

@@ -52,7 +52,7 @@ export const committee = {
     // Google Drive FILE ID:
     // 1BVXpqy3fZyCl3iFrdRjftbISntFjPaf8
     image:
-      "https://drive.google.com/uc?export=view&id=1BVXpqy3fZyCl3iFrdRjftbISntFjPaf8",
+      "",
   },
 
   viceChair: {
@@ -69,7 +69,7 @@ export const committee = {
     // Google Drive FILE ID:
     // 1PFj4g_ryRdnDhvJzD8bRsPWZNx4DtF_G
     image:
-      "https://drive.google.com/uc?export=view&id=1PFj4g_ryRdnDhvJzD8bRsPWZNx4DtF_G",
+      "",
   },
 
   directors: [
@@ -89,7 +89,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1A6ux_TOk4VqBhB8rWMpJaTI4sAlIK0kU
       image:
-        "https://drive.google.com/uc?export=view&id=1A6ux_TOk4VqBhB8rWMpJaTI4sAlIK0kU",
+        "",
     },
 
     {
@@ -106,7 +106,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 14-iGDc0ygP26qphHJ88919MZiXOlWnoQ
       image:
-        "https://drive.google.com/uc?export=view&id=14-iGDc0ygP26qphHJ88919MZiXOlWnoQ",
+        "",
     },
 
     {
@@ -156,7 +156,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1AJvJ1ddPJj-pmjtaMEvZtOmHtipzrR7-
       image:
-        "https://drive.google.com/uc?export=view&id=1AJvJ1ddPJj-pmjtaMEvZtOmHtipzrR7-",
+        "",
     },
 
     {
@@ -224,7 +224,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1UkWep15zUrKNVU6wWxJsYvM5lPRuQQJq
       image:
-        "https://drive.google.com/uc?export=view&id=1UkWep15zUrKNVU6wWxJsYvM5lPRuQQJq",
+        "",
     },
 
     {
@@ -240,7 +240,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1DRyQrCBQKo0QEt5L5pIHbGfQ9mL4GVcJ
       image:
-        "https://drive.google.com/uc?export=view&id=1DRyQrCBQKo0QEt5L5pIHbGfQ9mL4GVcJ",
+        "",
     },
 
     {
@@ -273,7 +273,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1uoAr4GnL-eluF6hQDXNoS2ogn5HXXq1R
       image:
-        "https://drive.google.com/uc?export=view&id=1uoAr4GnL-eluF6hQDXNoS2ogn5HXXq1R",
+        "",
     },
 
     {
@@ -290,7 +290,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1KxeAdP-pKkFi7h2lFBJd8rZu1Tp2osBl
       image:
-        "https://drive.google.com/uc?export=view&id=1KxeAdP-pKkFi7h2lFBJd8rZu1Tp2osBl",
+        "",
     },
 
     // {
@@ -328,7 +328,7 @@ export const committee = {
       // Google Drive FILE ID:
       // 1Is-WIe2ooLvP30IyQ_g_7jBQUbfjroqD
       image:
-        "https://drive.google.com/uc?export=view&id=1Is-WIe2ooLvP30IyQ_g_7jBQUbfjroqD",
+        "",
     },
 
     {
