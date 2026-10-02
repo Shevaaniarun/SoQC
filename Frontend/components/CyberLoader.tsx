@@ -309,8 +309,8 @@ function setupScene(container: HTMLDivElement, qubitCount: number): () => void {
   }
 
   /* --- Faint static rings showing each orbital plane --- */
-  const uniqueTilts = Array.from(new Set(tilts));
-  const guideRings: THREE.Mesh[] = uniqueTilts.map((tilt) => {
+  //const uniqueTilts = Array.from(new Set(tilts));
+  /*const guideRings: THREE.Mesh[] = uniqueTilts.map((tilt) => {
     const geo = track(new THREE.TorusGeometry(orbitRadius, 0.004, 6, 96));
     const mat = track(
       new THREE.MeshBasicMaterial({
@@ -324,7 +324,7 @@ function setupScene(container: HTMLDivElement, qubitCount: number): () => void {
     ring.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), tilt);
     scene.add(ring);
     return ring;
-  });
+  });*/
 
   /* --- Entanglement beam (reused, repositioned every frame) --- */
   const beamGeo = track(

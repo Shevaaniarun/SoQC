@@ -389,7 +389,7 @@ function HelixCard({
 
   /* ---------------------- Shadow ---------------------- */
   const styleBoxShadow = useTransform(() => {
-    const { angle, y } = getLoopState();
+    const { angle} = getLoopState();
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
 
     if (focus > 0.9) {

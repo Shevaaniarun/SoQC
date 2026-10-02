@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
+
 import {
   BrowserRouter,
   Routes,
@@ -6,6 +7,7 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
+
 import {
   AnimatePresence,
   motion,
@@ -24,20 +26,7 @@ import { articles as initialArticles } from "../data/articles/articles";
 
 /* =========================================================
    LAZY LOADED PAGES
-   =========================================================
-   
-   IMPORTANT:
-   There is NO artificial 3500ms delay here.
-
-   The previous version had:
-
-   new Promise((res) => setTimeout(res, 3500))
-
-   That caused the loader to appear every time a route
-   was loaded.
-
-   Now the pages load normally.
-========================================================= */
+   ========================================================= */
 
 const Home = lazy(() => import("../pages/Home"));
 const Events = lazy(() => import("../pages/Events"));
@@ -52,32 +41,46 @@ const Continue = lazy(() => import("../extras/Continue"));
 
 /* =========================================================
    APP
-========================================================= */
+   ========================================================= */
 
 export default function App() {
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const [isLTablet, setIsLTablet] = useState(false);
 
   /*
    * Controls the CyberLoader.
-   *
-   * This state starts TRUE every time the React application
-   * is created.
-   *
-   * Therefore:
-   *
-   * Browser refresh  → loader appears
-   * First visit      → loader appears
-   * Route navigation → loader does NOT appear
    */
   const [showInitialLoader, setShowInitialLoader] = useState(true);
 
   /* =======================================================
      RESPONSIVE SCREEN SIZE
-  ======================================================= */
+     ======================================================= */
 
   useEffect(() => {
     const update = () => {
-      setIsMobile(window.innerWidth < 768);
+      const width = window.innerWidth;
+
+      /*
+       * Mobile
+       * < 768px
+       */
+      setIsMobile(width < 768);
+
+      /*
+       * Tablet
+       * 768px - 1023px
+       */
+      setIsTablet(width >= 768 && width < 1024);
+
+      /*
+       * Large Tablet
+       * 1024px - 1199px
+       *
+       * Adjust these breakpoints if your Navigation
+       * component uses different definitions.
+       */
+      setIsLTablet(width >= 1024 && width < 1200);
     };
 
     update();
@@ -91,19 +94,9 @@ export default function App() {
 
   /* =======================================================
      INITIAL LOADER
-  ======================================================= */
+     ======================================================= */
 
   useEffect(() => {
-    /*
-     * Give the CyberLoader enough time to be visible.
-     *
-     * Change 2500 to whatever duration you want.
-     *
-     * 1500 = 1.5 seconds
-     * 2000 = 2 seconds
-     * 2500 = 2.5 seconds
-     * 3000 = 3 seconds
-     */
     const timer = window.setTimeout(() => {
       setShowInitialLoader(false);
     }, 2500);
@@ -115,7 +108,7 @@ export default function App() {
 
   /* =======================================================
      SHOW INITIAL LOADER
-  ======================================================= */
+     ======================================================= */
 
   if (showInitialLoader) {
     return <CyberLoader fullScreen />;
@@ -123,18 +116,22 @@ export default function App() {
 
   /* =======================================================
      MAIN APPLICATION
-  ======================================================= */
+     ======================================================= */
 
   return (
     <BrowserRouter>
-      <AppContent isMobile={isMobile} />
+      <AppContent
+        isMobile={isMobile}
+        isTablet={isTablet}
+        isLTablet={isLTablet}
+      />
     </BrowserRouter>
   );
 }
 
 /* =========================================================
    ANIMATED ROUTES
-========================================================= */
+   ========================================================= */
 
 interface AnimatedRoutesProps {
   user: {
@@ -160,7 +157,7 @@ interface AnimatedRoutesProps {
 
 /* =========================================================
    ROUTES
-========================================================= */
+   ========================================================= */
 
 function AnimatedRoutes({
   user,
@@ -175,7 +172,7 @@ function AnimatedRoutes({
 
   /* =======================================================
      SCROLL PROGRESS
-  ======================================================= */
+     ======================================================= */
 
   const { scrollYProgress } = useScroll();
 
@@ -409,7 +406,7 @@ function AnimatedRoutes({
 
 /* =========================================================
    PAGE TRANSITION
-========================================================= */
+   ========================================================= */
 
 function PageTransition({
   children,
@@ -445,18 +442,24 @@ function PageTransition({
 
 /* =========================================================
    APP CONTENT
-========================================================= */
+   ========================================================= */
+
+interface AppContentProps {
+  isMobile: boolean;
+  isTablet: boolean;
+  isLTablet: boolean;
+}
 
 function AppContent({
   isMobile,
-}: {
-  isMobile: boolean;
-}) {
+  isTablet,
+  isLTablet,
+}: AppContentProps) {
   const location = useLocation();
 
   /* =======================================================
      IMMERSIVE PAGES
-  ======================================================= */
+     ======================================================= */
 
   const isImmersive =
     location.pathname === "/" ||
@@ -464,7 +467,7 @@ function AppContent({
 
   /* =======================================================
      USER AUTH STATE
-  ======================================================= */
+     ======================================================= */
 
   const [user, setUser] = useState<{
     name: string;
@@ -480,7 +483,7 @@ function AppContent({
 
   /* =======================================================
      ARTICLES
-  ======================================================= */
+     ======================================================= */
 
   const [articles, setArticles] = useState(() =>
     initialArticles.map((art: any) => ({
@@ -491,7 +494,7 @@ function AppContent({
 
   /* =======================================================
      ADD ARTICLE
-  ======================================================= */
+     ======================================================= */
 
   const handleAddArticle = (newArticle: any) => {
     const articleWithStatus = {
@@ -507,7 +510,7 @@ function AppContent({
 
   /* =======================================================
      APPROVE ARTICLE
-  ======================================================= */
+     ======================================================= */
 
   const handleApproveArticle = (
     id: string | number
@@ -526,7 +529,7 @@ function AppContent({
 
   /* =======================================================
      REJECT ARTICLE
-  ======================================================= */
+     ======================================================= */
 
   const handleRejectArticle = (
     id: string | number
@@ -538,7 +541,7 @@ function AppContent({
 
   /* =======================================================
      APPLICATION UI
-  ======================================================= */
+     ======================================================= */
 
   return (
     <>
@@ -677,6 +680,8 @@ function AppContent({
 
         <Navigation
           isMobile={isMobile}
+          isTablet={isTablet}
+          isLTablet={isLTablet}
         />
 
         {/* =================================================
@@ -700,6 +705,7 @@ function AppContent({
             isMobile={isMobile}
           />
         </main>
+
         {/* =================================================
             FOOTER
         ================================================= */}
@@ -722,8 +728,7 @@ function AppContent({
                 maxWidth: 1200,
                 margin: "0 auto",
                 display: "flex",
-                justifyContent:
-                  "space-between",
+                justifyContent: "space-between",
                 alignItems: "center",
                 flexWrap: "wrap",
                 gap: isMobile ? 12 : 16,
@@ -733,6 +738,7 @@ function AppContent({
               }}
             >
               {/* Logo */}
+
               <div
                 style={{
                   display: "flex",
@@ -748,9 +754,12 @@ function AppContent({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 12,
-                    background: "rgba(124,58,237,0.1)",
-                    border: "1px solid rgba(196,181,253,0.2)",
-                    boxShadow: "0 0 25px rgba(124,58,237,0.25)",
+                    background:
+                      "rgba(124,58,237,0.1)",
+                    border:
+                      "1px solid rgba(196,181,253,0.2)",
+                    boxShadow:
+                      "0 0 25px rgba(124,58,237,0.25)",
                     overflow: "hidden",
                     flexShrink: 0,
                   }}
@@ -784,9 +793,7 @@ function AppContent({
               <p
                 style={{
                   fontFamily: "Inter",
-                  fontSize: isMobile
-                    ? 10
-                    : 12,
+                  fontSize: isMobile ? 10 : 12,
                   color:
                     "rgba(248,248,255,0.25)",
                   letterSpacing: "0.02em",
@@ -802,11 +809,8 @@ function AppContent({
 
               <p
                 style={{
-                  fontFamily:
-                    "JetBrains Mono",
-                  fontSize: isMobile
-                    ? 10
-                    : 11,
+                  fontFamily: "JetBrains Mono",
+                  fontSize: isMobile ? 10 : 11,
                   color:
                     "rgba(248,248,255,0.2)",
                   letterSpacing: "0.1em",
