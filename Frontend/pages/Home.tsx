@@ -703,7 +703,7 @@ export default function Home() {
                 padding: 16,
               }}>
                 <img
-                  src="/data/logo/soqc-logo-step-4.png"
+                  src="/public/logo/soqc-logo-step-4.png"
                   alt="SoQC Logo"
                   style={{
                     width: '100%',
