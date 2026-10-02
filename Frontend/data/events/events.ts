@@ -7,11 +7,11 @@ export const events = [
     category: "Ceremony",
 
     image: [
-      "/data/events/soqc_inaug/1.jpg",
-      "/data/events/soqc_inaug/2.jpg",
-      "/data/events/soqc_inaug/3.jpg",
-      "/data/events/soqc_inaug/4.jpg",
-      "/data/events/soqc_inaug/5.jpg",
+      "/soqc_inaug/1.jpg",
+      "/soqc_inaug/2.jpg",
+      "/soqc_inaug/3.jpg",
+      "/soqc_inaug/4.jpg",
+      "/soqc_inaug/5.jpg",
     ],
 
     description:
@@ -30,7 +30,7 @@ export const events = [
     category: "Seminar",
 
     image: [
-      "/data/events/quantum_awareness_session/1.jpg",
+      "/quantum_awareness_session/1.jpg",
     ],
 
     description:
