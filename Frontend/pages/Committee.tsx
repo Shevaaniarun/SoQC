@@ -32,7 +32,6 @@ const domainGroups = committee.directors.map((director) => ({
 const members = [
   committee.chair,
   committee.viceChair,
-
   ...domainGroups.flatMap((group) => [group.director, ...group.deputies]),
 ] as Member[];
 
@@ -52,7 +51,6 @@ function GlitchText({
   const [display, setDisplay] = useState(text);
 
   useEffect(() => {
-    let raf = 0;
     let frame = 0;
     const totalFrames = 11;
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -90,7 +88,6 @@ function GlitchText({
     return () => {
       clearTimeout(timeout);
       if (interval) clearInterval(interval);
-      cancelAnimationFrame(raf);
     };
   }, [text, delay]);
 
@@ -272,7 +269,10 @@ function HelixCard({
   onSelect: (m: Member) => void;
   isLocking: boolean;
 }) {
-  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
+  const [dimensions, setDimensions] = useState({
+    width: typeof window !== "undefined" ? window.innerWidth : 1200,
+    height: typeof window !== "undefined" ? window.innerHeight : 800,
+  });
 
   useEffect(() => {
     const update = () =>
@@ -289,24 +289,18 @@ function HelixCard({
   const isMobile = dimensions.width < 640;
   const isTablet = dimensions.width >= 640 && dimensions.width < 1024;
 
-  /*
-   * Responsive helix density:
-   * - Mobile: very calm helix. One large focused card + two faint neighbours.
-   * - Tablet: larger focused card with generous vertical separation.
-   * - Desktop: original helix proportions.
-   */
-  const itemsPerRevolution = isMobile ? 12 : isTablet ? 9 : 6;
-  const helixTwist = isMobile ? 0.78 : isTablet ? 0.88 : 1.15;
+  const itemsPerRevolution = isMobile ? 8 : isTablet ? 8 : 6;
+  const helixTwist = isMobile ? 1.0 : isTablet ? 1.0 : 1.15;
   const angleSpacing = ((Math.PI * 2) / itemsPerRevolution) * helixTwist;
 
-  const cylinderRadius = isMobile ? 78 : isTablet ? 150 : 265;
-  const ySpacing = isMobile ? 220 : isTablet ? 190 : 92;
+  const cylinderRadius = isMobile ? 130 : isTablet ? 180 : 265;
+  const ySpacing = isMobile ? 110 : isTablet ? 130 : 92;
 
-  const baseCardWidth = isMobile ? 210 : isTablet ? 238 : CARD_SIZE;
-  const baseCardHeight = isMobile ? 184 : isTablet ? 194 : CARD_SIZE - 100;
+  const baseCardWidth = isMobile ? 190 : isTablet ? 230 : CARD_SIZE;
+  const baseCardHeight = isMobile ? 150 : isTablet ? 170 : CARD_SIZE - 100;
   const cardTopOffset = Math.round((baseCardHeight / (CARD_SIZE - 100)) * 72);
 
-  const zOffset = -140;
+  const zOffset = isMobile ? -100 : -140;
   const startYOffset = 0;
   const totalLoopHeight = totalItems * ySpacing;
 
@@ -327,32 +321,30 @@ function HelixCard({
   /* ---------------------- Position ---------------------- */
   const styleTransform = useTransform(() => {
     const { angle, y } = getLoopState();
-    const xScale = isMobile ? 0.68 : isTablet ? 0.82 : 1;
+    const xScale = isMobile ? 0.85 : isTablet ? 0.9 : 1;
     const x = Math.sin(angle) * cylinderRadius * xScale;
     const rawZ = Math.cos(angle) * cylinderRadius;
     const z = rawZ + zOffset;
 
-    // Keep the helix visible, but don't turn cards edge-on on small screens.
-    const facingScale = isMobile ? 0.42 : isTablet ? 0.56 : 1;
+    const facingScale = isMobile ? 0.75 : isTablet ? 0.85 : 1;
     const facing = -Math.atan2(x, rawZ) * facingScale;
 
     return `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${facing}rad)`;
   });
 
-  /* ---------------------- Focus ---------------------- */
+  /* ---------------------- Focus / Scale ---------------------- */
   const styleScale = useTransform(() => {
     const { angle, y } = getLoopState();
     const centerFocus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
 
     if (isMobile) {
-      // Only the center card becomes large. The two neighbours stay smaller.
-      const center = Math.abs(y) < ySpacing * 0.42;
-      return center ? 1.13 : 0.82;
+      const center = Math.abs(y) < ySpacing * 0.5;
+      return center ? 1.08 : 0.82 + centerFocus * 0.1;
     }
 
     if (isTablet) {
-      const center = Math.abs(y) < ySpacing * 0.42;
-      return center ? 1.14 : 0.88 + centerFocus * 0.05;
+      const center = Math.abs(y) < ySpacing * 0.5;
+      return center ? 1.1 : 0.85 + centerFocus * 0.1;
     }
 
     return 1;
@@ -365,26 +357,9 @@ function HelixCard({
 
     if (isMobile) {
       const distance = Math.abs(y);
-      const center = distance < ySpacing * 0.42;
-      const neighbour =
-        distance >= ySpacing * 0.42 && distance < ySpacing * 1.38;
-
-      // Exactly one strong card; its two closest neighbours are intentionally faint.
-      if (center) return 1;
-      if (neighbour) return 0.16 + focus * 0.08;
-      return 0.025;
-    }
-
-    if (isTablet) {
-      const distance = Math.abs(y);
-      const center = distance < ySpacing * 0.42;
-      const near = distance >= ySpacing * 0.42 && distance < ySpacing * 1.48;
-      const mid = distance >= ySpacing * 1.48 && distance < ySpacing * 2.25;
-
-      if (center) return 1;
-      if (near) return 0.28 + focus * 0.08;
-      if (mid) return 0.07 + focus * 0.04;
-      return 0.015;
+      if (distance < ySpacing * 0.5) return 1;
+      if (distance < ySpacing * 2.2) return 0.45 + focus * 0.4;
+      return 0.15;
     }
 
     return 0.35 + Math.pow(focus, 1.4) * 0.65;
@@ -392,18 +367,9 @@ function HelixCard({
 
   /* ---------------------- Saturation ---------------------- */
   const styleFilter = useTransform(() => {
-    const { angle, y } = getLoopState();
+    const { angle } = getLoopState();
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
-
-    if (isMobile) {
-      return `saturate(${0.38 + focus * 0.62})`;
-    }
-
-    if (isTablet) {
-      return `saturate(${0.5 + focus * 0.5})`;
-    }
-
-    return `saturate(${0.65 + focus * 0.35})`;
+    return `saturate(${0.5 + focus * 0.5})`;
   });
 
   /* ---------------------- Z-index ---------------------- */
@@ -411,24 +377,14 @@ function HelixCard({
     const { angle, y } = getLoopState();
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
 
-    const centerBoost = Math.abs(y) < ySpacing * 0.42 ? 500 : 0;
+    const centerBoost = Math.abs(y) < ySpacing * 0.5 ? 500 : 0;
     return Math.round(centerBoost + focus * 200);
   });
 
   /* ---------------------- Pointer events ---------------------- */
   const stylePointerEvents = useTransform(() => {
     const { y } = getLoopState();
-
-    // Invisible/faint cards must not sit over the focused card and steal taps.
-    if (isMobile) {
-      return Math.abs(y) < ySpacing * 1.38 ? "auto" : "none";
-    }
-
-    if (isTablet) {
-      return Math.abs(y) < ySpacing * 2.25 ? "auto" : "none";
-    }
-
-    return "auto";
+    return Math.abs(y) < ySpacing * 2.5 ? "auto" : "none";
   });
 
   /* ---------------------- Shadow ---------------------- */
@@ -436,45 +392,26 @@ function HelixCard({
     const { angle, y } = getLoopState();
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
 
-    if (focus > 0.94) {
-      return `
-        0 0 ${isMobile ? 58 : isTablet ? 54 : 50}px ${roleColor.glow},
-        inset 0 0 20px ${roleColor.softGlow},
-        0 14px 28px rgba(0,0,0,0.5)
-      `;
-    }
-
-    if ((isMobile || isTablet) && Math.abs(y) > ySpacing * 0.42) {
-      return `0 8px 20px rgba(0,0,0,0.3)`;
+    if (focus > 0.9) {
+      return `0 0 ${isMobile ? 32 : 50}px ${roleColor.glow}, inset 0 0 20px ${roleColor.softGlow}, 0 14px 28px rgba(0,0,0,0.5)`;
     }
 
     if (focus > 0.6) {
-      return `
-        0 0 30px ${roleColor.softGlow},
-        0 10px 22px rgba(0,0,0,0.4)
-      `;
+      return `0 0 20px ${roleColor.softGlow}, 0 10px 22px rgba(0,0,0,0.4)`;
     }
 
-    return `
-      0 8px 18px rgba(0,0,0,0.45),
-      0 1px 0 rgba(196,181,253,0.1)
-    `;
+    return `0 8px 18px rgba(0,0,0,0.45), 0 1px 0 rgba(196,181,253,0.1)`;
   });
 
   /* ---------------------- Border ---------------------- */
   const styleBorder = useTransform(() => {
-    const { angle, y } = getLoopState();
+    const { angle } = getLoopState();
     const focus = Math.max(0, Math.min(1, (Math.cos(angle) + 1) / 2));
 
     if (focus > 0.88) return `1px solid ${roleColor.light}`;
-    if ((isMobile || isTablet) && Math.abs(y) > ySpacing * 0.42) {
-      return "1px solid rgba(196,181,253,0.10)";
-    }
     if (focus > 0.6) return `1px solid ${roleColor.softGlow}`;
-    return "1px solid rgba(255,255,255,0.04)";
+    return "1px solid rgba(255,255,255,0.06)";
   });
-
-  const designationOpacity = useTransform(() => 1);
 
   return (
     <motion.button
@@ -521,7 +458,7 @@ function HelixCard({
           height: "100%",
           boxSizing: "border-box",
           borderRadius: 10,
-          padding: isMobile ? 16 : isTablet ? 18 : 20,
+          padding: isMobile ? 12 : isTablet ? 16 : 20,
           background: roleColor.background,
           backdropFilter: "blur(16px)",
           border: styleBorder,
@@ -531,7 +468,7 @@ function HelixCard({
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
-          gap: isMobile ? 6 : 8,
+          gap: isMobile ? 4 : 8,
         }}
       >
         <AnimatePresence>
@@ -569,32 +506,14 @@ function HelixCard({
               >
                 <ScanSweep duration={0.38} color={roleColor.glow} />
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                  position: "absolute",
-                  bottom: -22,
-                  left: 0,
-                  right: 0,
-                  textAlign: "center",
-                  fontFamily: "JetBrains Mono",
-                  fontSize: 9,
-                  letterSpacing: "0.2em",
-                  color: roleColor.main,
-                  textTransform: "uppercase",
-                }}
-              >
-                Locating file…
-              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
         <div
           style={{
-            width: isMobile ? 68 : isTablet ? 76 : 72,
-            height: isMobile ? 68 : isTablet ? 76 : 72,
+            width: isMobile ? 48 : isTablet ? 64 : 72,
+            height: isMobile ? 48 : isTablet ? 64 : 72,
             borderRadius: "50%",
             overflow: "hidden",
             border: `2px solid ${roleColor.light}`,
@@ -618,7 +537,7 @@ function HelixCard({
                 alignItems: "center",
                 justifyContent: "center",
                 color: "rgba(255,255,255,0.2)",
-                fontSize: 28,
+                fontSize: isMobile ? 20 : 28,
                 fontFamily: "Outfit",
               }}
             >
@@ -631,7 +550,7 @@ function HelixCard({
           <div
             style={{
               fontFamily: "Outfit",
-              fontSize: isMobile ? 16 : isTablet ? 17 : 17,
+              fontSize: isMobile ? 13 : isTablet ? 15 : 17,
               fontWeight: 700,
               color: "#fff",
               lineHeight: 1.2,
@@ -640,86 +559,38 @@ function HelixCard({
             {member.name}
           </div>
 
-          <motion.div
+          <div
             style={{
               fontFamily: "JetBrains Mono",
-              fontSize: 9,
+              fontSize: isMobile ? 8 : 9,
               color: roleColor.main,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              marginTop: 4,
-              opacity: designationOpacity,
+              marginTop: 2,
               textShadow: `0 0 12px ${roleColor.glow}`,
             }}
           >
             {member.role}
-          </motion.div>
+          </div>
         </div>
 
-        <motion.div
+        <div
           style={{
             fontFamily: "Inter",
-            fontSize: 12,
+            fontSize: isMobile ? 10 : 12,
             color: "rgba(248,248,255,0.65)",
-            lineHeight: 1.4,
-            opacity: designationOpacity,
+            lineHeight: 1.3,
           }}
         >
           {member.dept}
           {member.year ? ` · ${member.year}` : ""}
-        </motion.div>
-
-        {member.domain && member.domain !== "-" && (
-          <motion.div
-            style={{
-              fontFamily: "JetBrains Mono",
-              fontSize: 9,
-              color: "rgba(248,248,255,0.4)",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              opacity: designationOpacity,
-              borderTop: "1px solid rgba(255,255,255,0.06)",
-              paddingTop: 6,
-              width: "80%",
-            }}
-          >
-            {member.domain}
-          </motion.div>
-        )}
-
-        {member.quote && (
-          <motion.div
-            style={{
-              fontFamily: "Inter",
-              fontSize: 8,
-              color: "rgba(248,248,255,0.35)",
-              lineHeight: 1.3,
-              fontStyle: "italic",
-              maxWidth: "90%",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              marginTop: 2,
-            }}
-          >
-            "
-            {member.quote.length > 50
-              ? member.quote.slice(0, 50) + "..."
-              : member.quote}
-            "
-          </motion.div>
-        )}
+        </div>
       </motion.div>
     </motion.button>
   );
 }
 
-/* ===========================================================
-   Static (non-3D) member card used inside the domain
-   hierarchy view — director on top, deputies fanned below.
-=========================================================== */
+/* Static member card for domain view */
 function StaticMemberCard({
   member,
   onSelect,
@@ -864,10 +735,7 @@ function StaticMemberCard({
   );
 }
 
-/* ===========================================================
-   Org-chart style filtered view: one domain, director on top,
-   deputies connected below with animated hierarchy lines.
-=========================================================== */
+/* Domain Hierarchy View (Centered Strictly for Mobile) */
 function DomainHierarchyView({
   domain,
   director,
@@ -904,14 +772,15 @@ function DomainHierarchyView({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "flex-start",
+        justifyContent: isMobile ? "center" : "flex-start",
         gap: 0,
         padding: isMobile
-          ? "150px 14px 40px"
+          ? "20px 14px"
           : isTablet
             ? "100px 20px 50px"
             : "50px 24px 60px",
         overflowY: "auto",
+        boxSizing: "border-box",
       }}
     >
       {/* Domain label */}
@@ -925,7 +794,7 @@ function DomainHierarchyView({
           letterSpacing: "0.22em",
           color: roleColor.main,
           textTransform: "uppercase",
-          marginBottom: isMobile ? 14 : 20,
+          marginBottom: isMobile ? 12 : 20,
           textShadow: `0 0 14px ${roleColor.glow}`,
           textAlign: "center",
         }}
@@ -961,7 +830,7 @@ function DomainHierarchyView({
             transition={{ delay: 0.45, duration: 0.3, ease: "easeOut" }}
             style={{
               width: 2,
-              height: isMobile ? 22 : 32,
+              height: isMobile ? 18 : 32,
               transformOrigin: "top",
               background: `linear-gradient(180deg, ${roleColor.glow}, rgba(196,181,253,0.15))`,
             }}
@@ -974,9 +843,7 @@ function DomainHierarchyView({
             transition={{ delay: 0.55, duration: 0.35, ease: "easeOut" }}
             style={{
               height: 2,
-              width: `min(90%, ${
-                deputies.length * (isMobile ? 130 : isTablet ? 180 : 230)
-              }px)`,
+              width: `min(90%, ${deputies.length * (isMobile ? 130 : isTablet ? 180 : 230)}px)`,
               maxWidth: 900,
               background: "rgba(196,181,253,0.35)",
             }}
@@ -987,10 +854,11 @@ function DomainHierarchyView({
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: isMobile ? 14 : isTablet ? 22 : 28,
+              gap: isMobile ? 10 : isTablet ? 22 : 28,
               justifyContent: "center",
               marginTop: 0,
               maxWidth: 1000,
+              width: "100%",
             }}
           >
             {deputies.map((deputy, i) => {
@@ -1012,7 +880,7 @@ function DomainHierarchyView({
                     transition={{ delay: 0.6 + i * 0.05, duration: 0.25 }}
                     style={{
                       width: 2,
-                      height: isMobile ? 16 : 22,
+                      height: isMobile ? 14 : 22,
                       transformOrigin: "top",
                       background: `linear-gradient(180deg, rgba(196,181,253,0.35), ${depColor.glow})`,
                     }}
@@ -1059,12 +927,12 @@ function DomainHierarchyView({
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.94 }}
         style={{
-          marginTop: isMobile ? 24 : 36,
+          marginTop: isMobile ? 18 : 36,
           border: "1px solid rgba(196,181,253,0.3)",
           background: "rgba(7,7,26,0.72)",
           backdropFilter: "blur(14px)",
           color: "#C4B5FD",
-          padding: "9px 20px",
+          padding: "8px 18px",
           borderRadius: 999,
           fontFamily: "JetBrains Mono",
           fontSize: 10,
@@ -1080,10 +948,7 @@ function DomainHierarchyView({
   );
 }
 
-/* ===========================================================
-   Cybertech terminal-style domain menu, fixed to the right
-   edge of the viewport.
-=========================================================== */
+/* Terminal Domain Menu */
 function TerminalDomainMenu({
   groups,
   activeDomain,
@@ -1098,16 +963,12 @@ function TerminalDomainMenu({
   const isMobile = viewport === "mobile";
   const isTablet = viewport === "tablet";
 
-  const panelWidth = isMobile ? 118 : isTablet ? 200 : 222;
-  const rightOffset = isMobile ? 8 : isTablet ? 16 : 40;
-  const rowFontSize = isMobile ? 7 : isTablet ? 9 : 10;
-  const rowPadding = isMobile ? "7px 8px" : isTablet ? "9px 11px" : "11px 14px";
-  const headerPadding = isMobile
-    ? "6px 8px"
-    : isTablet
-      ? "8px 11px"
-      : "10px 14px";
-  const headerFontSize = isMobile ? 7 : isTablet ? 9 : 10;
+  const panelWidth = isMobile ? 120 : isTablet ? 190 : 222;
+  const rightOffset = isMobile ? 10 : isTablet ? 16 : 40;
+  const rowFontSize = isMobile ? 8 : isTablet ? 9 : 10;
+  const rowPadding = isMobile ? "6px 8px" : isTablet ? "8px 10px" : "11px 14px";
+  const headerPadding = isMobile ? "6px 8px" : "10px 14px";
+  const headerFontSize = isMobile ? 8 : isTablet ? 9 : 10;
 
   return (
     <motion.div
@@ -1116,17 +977,18 @@ function TerminalDomainMenu({
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       style={{
         position: "fixed",
-        top: isTablet ? "60%" : "0%",
+        top: isMobile ? "auto" : "50%",
+        bottom: isMobile ? 16 : "auto",
         right: rightOffset,
-        transform: "translateY(-50%)",
+        transform: isMobile ? "none" : "translateY(-50%)",
         transformOrigin: "right center",
         zIndex: 40,
         width: panelWidth,
-        maxHeight: "82vh",
+        maxHeight: "75vh",
         overflowY: "auto",
-        borderRadius: 6,
+        borderRadius: 8,
         border: "1px solid rgba(196,181,253,0.16)",
-        background: "rgba(9,7,20,0.62)",
+        background: "rgba(9,7,20,0.75)",
         backdropFilter: "blur(18px)",
         boxShadow:
           "0 0 22px rgba(124,58,237,0.08), inset 0 0 28px rgba(124,58,237,0.04), 0 14px 30px rgba(0,0,0,0.4)",
@@ -1134,29 +996,6 @@ function TerminalDomainMenu({
         pointerEvents: "auto",
       }}
     >
-      {/* Ambient scanline sweeping the whole panel on a loop */}
-      <motion.div
-        initial={{ top: "-20%", opacity: 0 }}
-        animate={{ top: "120%", opacity: [0, 0.35, 0.35, 0] }}
-        transition={{
-          duration: 3.2,
-          repeat: Infinity,
-          ease: "linear",
-          repeatDelay: 1.4,
-        }}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          height: 20,
-          background:
-            "linear-gradient(180deg, transparent, rgba(168,85,247,0.10), transparent)",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Header bar */}
       <div
         style={{
           position: "relative",
@@ -1193,7 +1032,6 @@ function TerminalDomainMenu({
         />
       </div>
 
-      {/* Rows */}
       <div
         style={{
           position: "relative",
@@ -1207,26 +1045,12 @@ function TerminalDomainMenu({
             <motion.button
               key={group.domain}
               onClick={() => onSelect(group.domain)}
-              initial={{ opacity: 0, x: 36 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: 0.2 + i * 0.07,
-                duration: 0.4,
-                ease: [0.16, 1, 0.3, 1],
-              }}
               whileTap={{ scale: 0.97 }}
-              onMouseEnter={(e) => {
-                if (!isActive)
-                  e.currentTarget.style.background = "rgba(168,85,247,0.06)";
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.background = "transparent";
-              }}
               style={{
                 position: "relative",
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 6,
                 width: "100%",
                 boxSizing: "border-box",
                 padding: rowPadding,
@@ -1235,14 +1059,13 @@ function TerminalDomainMenu({
                   i < groups.length - 1
                     ? "1px solid rgba(196,181,253,0.07)"
                     : "none",
-                background: isActive ? "rgba(124,58,237,0.10)" : "transparent",
+                background: isActive ? "rgba(124,58,237,0.15)" : "transparent",
                 cursor: "pointer",
                 textAlign: "left",
                 fontFamily: "JetBrains Mono",
                 fontSize: rowFontSize,
                 letterSpacing: "0.05em",
                 color: isActive ? "#C4B5FD" : "rgba(196,181,253,0.55)",
-                transition: "background 0.25s ease, color 0.25s ease",
               }}
             >
               {isActive && (
@@ -1267,326 +1090,14 @@ function TerminalDomainMenu({
                 style={{
                   flex: 1,
                   textTransform: "uppercase",
-                  lineHeight: 1.35,
-                  textShadow: isActive
-                    ? "0 0 8px rgba(168,85,247,0.35)"
-                    : "none",
+                  lineHeight: 1.3,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {group.domain}
               </span>
-              <motion.span
-                animate={{ opacity: isActive ? 1 : 0, x: isActive ? 0 : -4 }}
-                transition={{ duration: 0.2 }}
-                style={{ color: "#A78BFA", flexShrink: 0 }}
-              >
-                ▸
-              </motion.span>
-            </motion.button>
-          );
-        })}
-      </div>
-    </motion.div>
-  );
-}
-
-/* ===========================================================
-   MOBILE-ONLY MEMBER ROW
-   Separate implementation so mobile never uses the desktop
-   vertical 3D helix calculations.
-=========================================================== */
-function MobileMemberRow({
-  members,
-  onSelect,
-  lockingMember,
-}: {
-  members: Member[];
-  onSelect: (m: Member) => void;
-  lockingMember: Member | null;
-}) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        overflowX: "auto",
-        overflowY: "hidden",
-        WebkitOverflowScrolling: "touch",
-        scrollSnapType: "x mandatory",
-        overscrollBehaviorX: "contain",
-        padding: "0 28px",
-        gap: 16,
-        boxSizing: "border-box",
-        scrollbarWidth: "none",
-      }}
-    >
-      <style>{`div[data-mobile-member-row]::-webkit-scrollbar{display:none}`}</style>
-      <div data-mobile-member-row style={{ display: "contents" }}>
-        {members.map((member, index) => (
-          <MobileMemberCard
-            key={`${member.name}-${index}`}
-            member={member}
-            onSelect={onSelect}
-            isLocking={lockingMember?.name === member.name}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MobileMemberCard({
-  member,
-  onSelect,
-  isLocking,
-}: {
-  member: Member;
-  onSelect: (m: Member) => void;
-  isLocking: boolean;
-}) {
-  const roleColor =
-    roleColors[member.role as keyof typeof roleColors] ??
-    roleColors["Director"];
-
-  return (
-    <motion.button
-      onClick={() => onSelect(member)}
-      whileTap={{ scale: 0.97 }}
-      initial={{ opacity: 0, y: 18, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: isLocking ? 1.02 : 1 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: "relative",
-        flex: "0 0 78vw",
-        maxWidth: 310,
-        height: 190,
-        scrollSnapAlign: "center",
-        padding: 18,
-        borderRadius: 14,
-        border: `1px solid ${roleColor.softGlow}`,
-        background: roleColor.background,
-        backdropFilter: "blur(18px)",
-        boxShadow: `0 0 28px ${roleColor.softGlow}, 0 14px 30px rgba(0,0,0,0.42), inset 0 0 22px rgba(255,255,255,0.025)`,
-        color: "#fff",
-        cursor: "pointer",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        gap: 7,
-      }}
-    >
-      <AnimatePresence>
-        {isLocking && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              zIndex: 5,
-            }}
-          >
-            <HudCorners size={18} inset={-7} color={roleColor.main} />
-            <ScanSweep duration={0.38} color={roleColor.glow} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div
-        style={{
-          width: 58,
-          height: 58,
-          borderRadius: "50%",
-          overflow: "hidden",
-          border: `2px solid ${roleColor.light}`,
-          boxShadow: `0 0 16px ${roleColor.softGlow}`,
-          flexShrink: 0,
-        }}
-      >
-        {member.image ? (
-          <img
-            src={member.image}
-            alt={member.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        ) : (
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(255,255,255,0.05)",
-              color: "rgba(255,255,255,0.35)",
-              fontSize: 22,
-              fontFamily: "Outfit",
-            }}
-          >
-            {member.name.charAt(0)}
-          </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          fontFamily: "Outfit",
-          fontSize: 16,
-          fontWeight: 700,
-          lineHeight: 1.2,
-        }}
-      >
-        {member.name}
-      </div>
-      <div
-        style={{
-          fontFamily: "JetBrains Mono",
-          fontSize: 8,
-          color: roleColor.main,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-        }}
-      >
-        {member.role}
-      </div>
-      <div
-        style={{
-          fontFamily: "Inter",
-          fontSize: 10,
-          color: "rgba(248,248,255,0.62)",
-        }}
-      >
-        {member.dept}
-        {member.year ? ` · ${member.year}` : ""}
-      </div>
-      {member.domain && member.domain !== "-" && (
-        <div
-          style={{
-            fontFamily: "JetBrains Mono",
-            fontSize: 7,
-            color: "rgba(248,248,255,0.36)",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-          }}
-        >
-          {member.domain}
-        </div>
-      )}
-    </motion.button>
-  );
-}
-
-/* ===========================================================
-   MOBILE-ONLY DOMAIN MENU
-   The original TerminalDomainMenu is deliberately not rendered
-   on mobile. This is a separate bottom dock implementation.
-=========================================================== */
-function MobileDomainMenu({
-  groups,
-  activeDomain,
-  onSelect,
-}: {
-  groups: typeof domainGroups;
-  activeDomain: string | null;
-  onSelect: (domain: string) => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: 0.15 }}
-      style={{
-        position: "fixed",
-        left: 10,
-        right: 10,
-        bottom: 12,
-        zIndex: 45,
-        padding: "9px 10px 10px",
-        borderRadius: 14,
-        border: "1px solid rgba(196,181,253,0.18)",
-        background: "rgba(9,7,20,0.76)",
-        backdropFilter: "blur(20px)",
-        boxShadow:
-          "0 0 24px rgba(124,58,237,0.12), 0 14px 30px rgba(0,0,0,0.4)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 7,
-          padding: "0 3px",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "JetBrains Mono",
-            fontSize: 7,
-            color: "#C4B5FD",
-            letterSpacing: "0.16em",
-          }}
-        >
-          DOMAIN.SYS
-        </span>
-        <span
-          style={{
-            fontFamily: "JetBrains Mono",
-            fontSize: 7,
-            color: "rgba(196,181,253,0.38)",
-          }}
-        >
-          SWIPE →
-        </span>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 7,
-          overflowX: "auto",
-          scrollbarWidth: "none",
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        {groups.map((group, i) => {
-          const isActive = activeDomain === group.domain;
-          return (
-            <motion.button
-              key={group.domain}
-              onClick={() => onSelect(group.domain)}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                flex: "0 0 auto",
-                minHeight: 32,
-                padding: "7px 10px",
-                borderRadius: 8,
-                border: isActive
-                  ? "1px solid rgba(196,181,253,0.65)"
-                  : "1px solid rgba(196,181,253,0.12)",
-                background: isActive
-                  ? "rgba(124,58,237,0.2)"
-                  : "rgba(255,255,255,0.025)",
-                color: isActive ? "#C4B5FD" : "rgba(196,181,253,0.58)",
-                fontFamily: "JetBrains Mono",
-                fontSize: 7,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-                boxShadow: isActive ? "0 0 14px rgba(168,85,247,0.18)" : "none",
-                cursor: "pointer",
-              }}
-            >
-              <span style={{ opacity: 0.38, marginRight: 5 }}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              {group.domain}
             </motion.button>
           );
         })}
@@ -1598,7 +1109,6 @@ function MobileDomainMenu({
 export default function Committee() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [lockingMember, setLockingMember] = useState<Member | null>(null);
-  const [showHeader, setShowHeader] = useState(true);
   const [activeDomain, setActiveDomain] = useState<string | null>(null);
   const [viewport, setViewport] = useState<"mobile" | "tablet" | "desktop">(
     "desktop",
@@ -1630,13 +1140,6 @@ export default function Committee() {
 
   const clearFilter = () => setActiveDomain(null);
 
-  const dismissHeader = () => {
-    setShowHeader((prev) => (prev ? false : prev));
-  };
-
-  // Card click no longer opens the modal instantly — it first triggers a
-  // brief "target-lock" scan on the card itself, then materializes the
-  // detail panel once the lock completes.
   const handleSelect = (member: Member) => {
     if (lockTimeout.current) clearTimeout(lockTimeout.current);
     setSelectedMember(null);
@@ -1652,7 +1155,6 @@ export default function Committee() {
 
     const onWheel = (e: WheelEvent) => {
       if (activeDomainRef.current) return;
-      dismissHeader();
       vScrollTarget.current += e.deltaY * 1.2;
       vScroll.set(vScrollTarget.current);
     };
@@ -1663,7 +1165,6 @@ export default function Committee() {
     };
     const onTouchMove = (e: TouchEvent) => {
       if (activeDomainRef.current) return;
-      dismissHeader();
       const delta = lastY - e.touches[0].clientY;
       lastY = e.touches[0].clientY;
       vScrollTarget.current += delta * 2.2;
@@ -1681,12 +1182,8 @@ export default function Committee() {
       window.removeEventListener("touchmove", onTouchMove);
       if (lockTimeout.current) clearTimeout(lockTimeout.current);
     };
-  }, [vScroll, viewport]);
+  }, [vScroll]);
 
-  // Keep the helix gently moving on mobile, tablet, and desktop. Manual
-  // wheel/touch input and this subtle automatic descent share the same
-  // scroll value, so cards continuously travel through the helix. Paused
-  // while a domain filter is active so the filtered hierarchy stays stable.
   useAnimationFrame((_, delta) => {
     if (activeDomainRef.current) return;
     vScrollTarget.current += delta * 0.026;
@@ -1698,7 +1195,7 @@ export default function Committee() {
     roleColors["Director"];
 
   const activeGroup = activeDomain
-    ? (domainGroups.find((g) => g.domain === activeDomain) ?? null)
+    ? domainGroups.find((g) => g.domain === activeDomain) ?? null
     : null;
 
   return (
@@ -1720,7 +1217,7 @@ export default function Committee() {
           overflow: "hidden",
           perspective:
             viewport === "mobile"
-              ? "900px"
+              ? "750px"
               : viewport === "tablet"
                 ? "1050px"
                 : "1200px",
@@ -1728,25 +1225,14 @@ export default function Committee() {
           transformStyle: "preserve-3d",
         }}
       >
-        {/* Separate domain-menu implementations by screen size.
-            Desktop/tablet keep the ORIGINAL terminal menu; mobile gets
-            the new bottom dock. Only one is mounted at a time. */}
-        {viewport === "mobile" ? (
-          <MobileDomainMenu
-            groups={domainGroups}
-            activeDomain={activeDomain}
-            onSelect={handleDomainSelect}
-          />
-        ) : (
-          <TerminalDomainMenu
-            groups={domainGroups}
-            activeDomain={activeDomain}
-            onSelect={handleDomainSelect}
-            viewport={viewport}
-          />
-        )}
+        <TerminalDomainMenu
+          groups={domainGroups}
+          activeDomain={activeDomain}
+          onSelect={handleDomainSelect}
+          viewport={viewport}
+        />
 
-        {/* Soft center glow — no opaque top band */}
+        {/* Backdrop Lighting */}
         <div
           style={{
             position: "absolute",
@@ -1758,19 +1244,6 @@ export default function Committee() {
           }}
         />
 
-        {/* Top fade — blends nav into content, keeps starfield visible */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(180deg, transparent 0%, transparent 12%, rgba(3,3,10,0.08) 38%, rgba(3,3,10,0.35) 100%)",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-
-        {/* Ambient volumetric light in center */}
         <div
           style={{
             position: "absolute",
@@ -1786,45 +1259,7 @@ export default function Committee() {
           }}
         />
 
-        {/* Particles */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        >
-          {Array.from({ length: 45 }).map((_, i) => (
-            <motion.div
-              key={i}
-              animate={{
-                y: ["100vh", "-10vh"],
-                opacity: [0, 0.6, 0],
-                x: Math.sin(i) * 200,
-              }}
-              transition={{
-                duration: 10 + (i % 15),
-                repeat: Infinity,
-                delay: i % 10,
-                ease: "linear",
-              }}
-              style={{
-                position: "absolute",
-                left: `${(i * 17) % 100}%`,
-                width: 2 + (i % 3),
-                height: 2 + (i % 3),
-                borderRadius: "50%",
-                background: i % 2 === 0 ? "#a855f7" : "#22d3ee",
-                boxShadow: `0 0 10px ${i % 2 === 0 ? "#a855f7" : "#22d3ee"}`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Full 3D helix on every screen size, or a filtered domain hierarchy.
-            Mobile/tablet use a lower-density helix so the 3D effect remains
-            visible without cards piling on top of each other. */}
+        {/* 3D Helix (Rendered on Mobile, Tablet & Desktop) */}
         <AnimatePresence mode="wait">
           {activeGroup ? (
             <DomainHierarchyView
@@ -1877,7 +1312,6 @@ export default function Committee() {
                 position: "fixed",
                 inset: 0,
                 zIndex: 50,
-                top: viewport === "mobile" ? 0 : "-25%",
                 backdropFilter: "blur(20px)",
                 display: "flex",
                 alignItems: "center",
@@ -1886,22 +1320,6 @@ export default function Committee() {
                 cursor: "pointer",
               }}
             >
-              {/* Holographic grid backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.12 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  backgroundImage:
-                    "linear-gradient(rgba(168,85,247,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.5) 1px, transparent 1px)",
-                  backgroundSize: "38px 38px",
-                  pointerEvents: "none",
-                }}
-              />
-
               <motion.div
                 initial={{
                   scale: 0.82,
@@ -1917,10 +1335,9 @@ export default function Committee() {
                   position: "relative",
                   width: "min(760px, 100%)",
                   maxHeight: viewport === "mobile" ? "92vh" : undefined,
-                  minHeight: 380,
-                  borderRadius: 5,
+                  minHeight: viewport === "mobile" ? 300 : 380,
+                  borderRadius: 12,
                   background: roleColor.background,
-                  //border: "1px solid rgba(196,181,253,0.3)",
                   boxShadow:
                     "0 0 100px rgba(124,58,237,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
                   cursor: "auto",
@@ -1931,32 +1348,19 @@ export default function Committee() {
                   alignItems: "stretch",
                 }}
               >
-                {/* Materialization FX layer — spans the whole panel */}
                 <ChromaticFlash duration={0.4} />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    overflow: "hidden",
-                    borderRadius: 28,
-                    pointerEvents: "none",
-                    zIndex: 8,
-                  }}
-                >
-                  <ScanSweep duration={0.6} color={roleColor.glow} />
-                </div>
 
-                {/* Left column: all details */}
+                {/* Left column: details */}
                 <div
                   style={{
                     flex: "1 1 56%",
                     minWidth: 0,
                     padding:
-                      viewport === "mobile" ? "24px 20px 28px" : "40px 36px",
+                      viewport === "mobile" ? "20px 16px 24px" : "40px 36px",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                    gap: 14,
+                    gap: 12,
                   }}
                 >
                   <motion.div
@@ -1977,7 +1381,7 @@ export default function Committee() {
                   <h2
                     style={{
                       fontFamily: "Outfit",
-                      fontSize: 30,
+                      fontSize: viewport === "mobile" ? 22 : 30,
                       fontWeight: 700,
                       color: "#fff",
                       lineHeight: 1.15,
@@ -1987,137 +1391,54 @@ export default function Committee() {
                     <GlitchText text={selectedMember.name} delay={180} />
                   </h2>
 
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
+                  <div
                     style={{
                       fontFamily: "JetBrains Mono",
-                      fontSize: 12,
+                      fontSize: 11,
                       color: roleColor.main,
                       letterSpacing: "0.14em",
                       textTransform: "uppercase",
                     }}
                   >
                     {selectedMember.role}
-                  </motion.div>
+                  </div>
 
-                  <motion.p
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.55 }}
+                  <p
                     style={{
                       fontFamily: "Inter",
                       color: "rgba(248,248,255,0.7)",
-                      lineHeight: 1.6,
-                      fontSize: 15,
-                      margin: "0 0 6px 0",
+                      lineHeight: 1.5,
+                      fontSize: 14,
+                      margin: 0,
                     }}
                   >
                     {selectedMember.dept}
                     {selectedMember.year ? ` · ${selectedMember.year}` : ""}
-                  </motion.p>
-
-                  {selectedMember.domain && selectedMember.domain !== "-" && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.55 }}
-                      style={{
-                        fontFamily: "JetBrains Mono",
-                        color: "rgba(248,248,255,0.5)",
-                        fontSize: 13,
-                        margin: "-6px 0 0 0",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {selectedMember.domain}
-                    </motion.p>
-                  )}
+                  </p>
 
                   {selectedMember.quote && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.55 }}
+                    <p
                       style={{
                         fontFamily: "Inter",
                         color: "rgba(248,248,255,0.5)",
-                        lineHeight: 1.5,
-                        fontSize: 14,
-                        margin: "0 0 6px 0",
+                        lineHeight: 1.4,
+                        fontSize: 13,
+                        margin: 0,
                         fontStyle: "italic",
                         borderLeft: `2px solid ${roleColor.glow}`,
-                        paddingLeft: 12,
+                        paddingLeft: 10,
                       }}
                     >
                       "{selectedMember.quote}"
-                    </motion.p>
+                    </p>
                   )}
-
-                  {selectedMember.interests &&
-                    selectedMember.interests.length > 0 && (
-                      <div style={{ marginTop: 8 }}>
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.6 }}
-                          style={{
-                            fontFamily: "Inter",
-                            fontSize: 12,
-                            color: "rgba(248,248,255,0.7)",
-                            marginBottom: 8,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.1em",
-                          }}
-                        >
-                          Research Focus
-                        </motion.div>
-                        <div
-                          style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
-                        >
-                          {selectedMember.interests.map((interest, i) => (
-                            <motion.span
-                              key={interest}
-                              initial={{
-                                opacity: 0,
-                                scale: 0.8,
-                                filter: "blur(4px)",
-                              }}
-                              animate={{
-                                opacity: 1,
-                                scale: 1,
-                                filter: "blur(0px)",
-                              }}
-                              transition={{
-                                delay: 0.65 + i * 0.06,
-                                duration: 0.3,
-                              }}
-                              style={{
-                                padding: "4px 12px",
-                                borderRadius: 2,
-                                border: `1px solid ${roleColor.glow}`,
-                                background: roleColor.background,
-                                color: roleColor.main,
-                                fontFamily: "JetBrains Mono",
-                                fontSize: 13,
-                                fontWeight: 400,
-                              }}
-                            >
-                              {interest}
-                            </motion.span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                   {/* Social Links with Icons in Modal */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.7 }}
-                    style={{ display: "flex", gap: 20, marginTop: 8 }}
+                    transition={{ delay: 0.4 }}
+                    style={{ display: "flex", gap: 16, marginTop: 4 }}
                   >
                     {selectedMember.linkedin &&
                       selectedMember.linkedin !== "#" && (
@@ -2129,7 +1450,7 @@ export default function Committee() {
                             color: "rgba(248,248,255,0.6)",
                             textDecoration: "none",
                             fontFamily: "JetBrains Mono",
-                            fontSize: 12,
+                            fontSize: 11,
                             letterSpacing: "0.05em",
                             transition: "color 0.2s ease",
                             display: "flex",
@@ -2145,8 +1466,8 @@ export default function Committee() {
                           }
                         >
                           <svg
-                            width="16"
-                            height="16"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="currentColor"
                           >
@@ -2165,7 +1486,7 @@ export default function Committee() {
                             color: "rgba(248,248,255,0.6)",
                             textDecoration: "none",
                             fontFamily: "JetBrains Mono",
-                            fontSize: 12,
+                            fontSize: 11,
                             letterSpacing: "0.05em",
                             transition: "color 0.2s ease",
                             display: "flex",
@@ -2181,8 +1502,8 @@ export default function Committee() {
                           }
                         >
                           <svg
-                            width="16"
-                            height="16"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="currentColor"
                           >
@@ -2194,16 +1515,12 @@ export default function Committee() {
                   </motion.div>
                 </div>
 
-                {/* Right column: full-bleed portrait */}
-                <motion.div
-                  initial={{ clipPath: "inset(0 0 0 100%)" }}
-                  animate={{ clipPath: "inset(0 0 0 0%)" }}
-                  transition={{ duration: 0.55, delay: 0.1, ease: "easeInOut" }}
+                {/* Right column: image */}
+                <div
                   style={{
                     position: "relative",
-                    flex: viewport === "mobile" ? "0 0 200px" : "0 0 42%",
+                    flex: viewport === "mobile" ? "0 0 160px" : "0 0 42%",
                     width: viewport === "mobile" ? "100%" : undefined,
-                    minWidth: viewport === "mobile" ? undefined : 200,
                     alignSelf: "stretch",
                     overflow: "hidden",
                   }}
@@ -2229,45 +1546,16 @@ export default function Committee() {
                         alignItems: "center",
                         justifyContent: "center",
                         color: "rgba(255,255,255,0.1)",
-                        fontSize: 72,
+                        fontSize: 48,
                         fontFamily: "Outfit",
                       }}
                     >
                       {selectedMember.name.charAt(0)}
                     </div>
                   )}
-                  {/* Blend the image into the panel on its inner edge */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      background:
-                        "linear-gradient(90deg, rgba(7,7,26,0.85) 0%, transparent 14%, transparent 100%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      background:
-                        "linear-gradient(180deg, rgba(124,58,237,0.12) 0%, transparent 40%, rgba(7,7,26,0.35) 100%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      overflow: "hidden",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    <ScanSweep duration={0.7} color="rgba(196,181,253,0.55)" />
-                  </div>
-                </motion.div>
+                </div>
 
-                <HudCorners size={26} inset={10} color={roleColor.main} />
+                <HudCorners size={22} inset={8} color={roleColor.main} />
               </motion.div>
             </motion.div>
           )}
