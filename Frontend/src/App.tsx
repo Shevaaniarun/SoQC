@@ -700,48 +700,6 @@ function AppContent({
             isMobile={isMobile}
           />
         </main>
-
-        {/* =================================================
-            DESKTOP PORT
-        ================================================= */}
-
-        {!isMobile && !isImmersive && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              x: 30,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            transition={{
-              delay: 0.2,
-            }}
-            style={{
-              position: "fixed",
-              right: 24,
-              bottom: 24,
-              zIndex: 1090,
-              padding: "10px 12px",
-              borderRadius: 999,
-              border:
-                "1px solid rgba(196,181,253,0.16)",
-              background:
-                "rgba(7,7,26,0.6)",
-              backdropFilter:
-                "blur(18px)",
-              color: "#c4b5fd",
-              fontFamily: "JetBrains Mono",
-              fontSize: 11,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-            }}
-          >
-            5173
-          </motion.div>
-        )}
-
         {/* =================================================
             FOOTER
         ================================================= */}
@@ -775,7 +733,6 @@ function AppContent({
               }}
             >
               {/* Logo */}
-
               <div
                 style={{
                   display: "flex",
@@ -785,40 +742,36 @@ function AppContent({
               >
                 <div
                   style={{
-                    width: isMobile
-                      ? 24
-                      : 28,
-                    height: isMobile
-                      ? 24
-                      : 28,
-                    background:
-                      "linear-gradient(135deg, #7c3aed, #d946ef)",
-                    borderRadius: "50%",
+                    width: isMobile ? 40 : 48,
+                    height: isMobile ? 40 : 48,
                     display: "flex",
-                    alignItems:
-                      "center",
-                    justifyContent:
-                      "center",
-                    fontSize: isMobile
-                      ? 11
-                      : 13,
-                    color: "#fff",
-                    fontFamily:
-                      "JetBrains Mono",
-                    boxShadow:
-                      "0 0 10px rgba(124,58,237,0.4)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 12,
+                    background: "rgba(124,58,237,0.1)",
+                    border: "1px solid rgba(196,181,253,0.2)",
+                    boxShadow: "0 0 25px rgba(124,58,237,0.25)",
+                    overflow: "hidden",
+                    flexShrink: 0,
                   }}
                 >
-                  ψ
+                  <img
+                    src="../data/logo/soqc-logo-step-4.png"
+                    alt="SoQC Logo"
+                    style={{
+                      width: "80%",
+                      height: "80%",
+                      objectFit: "contain",
+                      display: "block",
+                    }}
+                  />
                 </div>
 
                 <span
                   style={{
                     fontFamily: "Outfit",
                     fontWeight: 700,
-                    fontSize: isMobile
-                      ? 14
-                      : 16,
+                    fontSize: isMobile ? 14 : 16,
                     color: "#c4b5fd",
                   }}
                 >

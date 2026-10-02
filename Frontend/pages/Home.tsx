@@ -340,7 +340,7 @@ export default function Home() {
                     pointerEvents: 'auto',
                   }}
                 >
-                  Join Now →
+                  Join Now
                 </a>
               </div>
             </div>
