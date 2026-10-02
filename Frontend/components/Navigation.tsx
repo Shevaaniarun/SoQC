@@ -82,7 +82,7 @@ export default function Navigation({ isMobile, isTablet, isLTablet }: NavCom) {
               }}
             >
               <img
-                src="../data/logo/soqc-logo-step-4.png"
+                src="/soqc-logo.png"
                 alt="SoQC"
                 style={{
                   width: 68,

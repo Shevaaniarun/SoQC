@@ -29,23 +29,19 @@ function TransparentVideo({ src }: { src: string }) {
         }
 
         if (ctx) {
-          // Draw current video frame onto canvas
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
           const frame = ctx.getImageData(0, 0, canvas.width, canvas.height)
           const data = frame.data
           const len = data.length
 
-          // Key out dark pixels (turn background completely transparent)
           for (let i = 0; i < len; i += 4) {
             const r = data[i]
             const g = data[i + 1]
             const b = data[i + 2]
 
-            // If pixel is near-black/dark purple, make alpha = 0
             if (r < 38 && g < 32 && b < 48) {
               data[i + 3] = 0
             } else {
-              // Smooth edge transition for glowing neon lines
               const brightness = Math.max(r, g, b)
               if (brightness < 70) {
                 data[i + 3] = Math.floor((brightness / 70) * 255)
@@ -67,8 +63,7 @@ function TransparentVideo({ src }: { src: string }) {
   }, [src])
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Hidden raw video element */}
+    <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'none' }}>
       <video
         ref={videoRef}
         src={src}
@@ -78,7 +73,6 @@ function TransparentVideo({ src }: { src: string }) {
         playsInline
         style={{ display: 'none' }}
       />
-      {/* Canvas displaying transparently keyed output */}
       <canvas
         ref={canvasRef}
         style={{
@@ -112,7 +106,7 @@ function SceneLayer({
     [-1500, -500, 0, 300, 600],
     ['blur(25px) saturate(0.5)', 'blur(0px) saturate(1)', 'blur(0px) saturate(1)', 'blur(15px) saturate(1.2)', 'blur(30px)']
   )
-  
+
   const pointerEvents = useTransform(z, (v: number) => (v > -450 && v < 350 ? 'auto' : 'none')) as any
 
   return (
@@ -140,11 +134,15 @@ function SceneLayer({
 }
 
 /* ─── Main Home Component ───────────────────────────── */
-export default function Home() {
+interface HomeProps {
+  setIsHoveringInteractive?: (isHovering: boolean) => void
+}
+
+export default function Home({ setIsHoveringInteractive }: HomeProps) {
   const pointer = useMousePosition()
   const ptrX = pointer.x === -999 ? (typeof window !== 'undefined' ? window.innerWidth / 2 : 600) : pointer.x
   const ptrY = pointer.y === -999 ? (typeof window !== 'undefined' ? window.innerHeight / 2 : 400) : pointer.y
-  
+
   const tiltX = typeof window !== 'undefined' ? (window.innerHeight / 2 - ptrY) * 0.018 : 0
   const tiltY = typeof window !== 'undefined' ? (ptrX - window.innerWidth / 2) * 0.018 : 0
 
@@ -185,139 +183,245 @@ export default function Home() {
     }
   }, [vScroll])
 
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      width: '100vw',
-      height: '100vh',
-      overflow: 'hidden',
-      background: 'transparent',
-      zIndex: 1,
-    }}>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        perspective: '1200px',
-        transformStyle: 'preserve-3d',
-      }}>
-        <motion.div style={{
-          width: '100%',
-          height: '100%',
-          transformStyle: 'preserve-3d',
-          rotateX: tiltX,
-          rotateY: tiltY,
-        }}>
+  const handleHoverStart = () => {
+    if (setIsHoveringInteractive) setIsHoveringInteractive(true)
+  }
 
-          {/* ═══════════ 1. HERO WITH KEYED TRANSPARENT VIDEO (Z=0) ═══════════ */}
+  const handleHoverEnd = () => {
+    if (setIsHoveringInteractive) setIsHoveringInteractive(false)
+  }
+
+  const exploreItems = [
+    { to: '/events', label: 'Events', desc: 'Workshops & seminars', icon: '◈', color: '#7c3aed' },
+    { to: '/articles', label: 'Articles', desc: 'Quantum knowledge', icon: '∂', color: '#a855f7' },
+    { to: '/projects', label: 'Projects', desc: 'Research & builds', icon: '⬡', color: '#c4b5fd' },
+    { to: '/committee', label: 'Committee', desc: 'Meet the team', icon: '◉', color: '#d946ef' },
+    { to: '/logo', label: 'Our Logo', desc: 'The story behind it', icon: '∞', color: '#8b5cf6' },
+  ]
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        background: 'transparent',
+        zIndex: 5,
+      }}
+    >
+      <style>{`
+        .explore-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 16px;
+        }
+
+        .interactive-card {
+          background: rgba(124, 58, 237, 0.08);
+          border: 1px solid rgba(196, 181, 253, 0.15);
+          border-radius: 16px;
+          padding: 20px 14px;
+          text-align: center;
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+          cursor: pointer;
+          backdrop-filter: blur(12px);
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .interactive-card:hover, .interactive-card:active {
+          transform: translateY(-4px) scale(1.02);
+          background: rgba(124, 58, 237, 0.22);
+          border-color: rgba(196, 181, 253, 0.4);
+          box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.5);
+        }
+
+        @media (max-width: 767px) {
+          .explore-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+          }
+          .explore-grid > *:nth-child(5) {
+            grid-column: 1 / -1;
+            justify-self: center;
+            width: 80%;
+          }
+        }
+      `}</style>
+
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          perspective: '1200px',
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        <motion.div
+          style={{
+            width: '100%',
+            height: '100%',
+            transformStyle: 'preserve-3d',
+            rotateX: tiltX,
+            rotateY: tiltY,
+          }}
+        >
+          {/* HERO LAYER */}
           <SceneLayer baseZ={0} vScroll={vScroll}>
-            <div style={{
-              position: 'relative',
-              zIndex: 2,
-              textAlign: 'center',
-              width: 'min(780px, 90vw)',
-              padding: '16px 24px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              {/* Badge */}
-              <div style={{
-                display: 'inline-flex',
+            <div
+              style={{
+                position: 'relative',
+                zIndex: 2,
+                textAlign: 'center',
+                width: 'min(780px, 90vw)',
+                padding: '16px 24px',
+                display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: 8,
-                padding: '6px 16px',
-                background: 'rgba(124,58,237,0.15)',
-                border: '1px solid rgba(196,181,253,0.2)',
-                borderRadius: 100,
-                marginBottom: 12,
-                fontSize: 12,
-                color: '#c4b5fd',
-                fontFamily: 'JetBrains Mono',
-                letterSpacing: '0.1em',
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 6px #a855f7', display: 'inline-block' }} />
+                justifyContent: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '6px 16px',
+                  background: 'rgba(124,58,237,0.15)',
+                  border: '1px solid rgba(196,181,253,0.2)',
+                  borderRadius: 100,
+                  marginBottom: 12,
+                  fontSize: 12,
+                  color: '#c4b5fd',
+                  fontFamily: 'JetBrains Mono',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: '#a855f7',
+                    boxShadow: '0 0 6px #a855f7',
+                    display: 'inline-block',
+                  }}
+                />
                 Society of Quantum Computing — Est. 2023
               </div>
 
-              {/* Main Title */}
-              <h1 style={{
-                fontFamily: 'Outfit',
-                fontSize: 'clamp(48px, 8vw, 100px)',
-                fontWeight: 900,
-                lineHeight: 0.9,
-                letterSpacing: '-0.04em',
-                marginBottom: 8,
-                background: 'linear-gradient(135deg, #ffffff 0%, #c4b5fd 30%, #a855f7 60%, #7c3aed 80%, #d946ef 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                backgroundSize: '200% 200%',
-              }}>
+              <h1
+                style={{
+                  fontFamily: 'Outfit',
+                  fontSize: 'clamp(48px, 8vw, 100px)',
+                  fontWeight: 900,
+                  lineHeight: 0.9,
+                  letterSpacing: '-0.04em',
+                  marginBottom: 8,
+                  background:
+                    'linear-gradient(135deg, #ffffff 0%, #c4b5fd 30%, #a855f7 60%, #7c3aed 80%, #d946ef 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  backgroundSize: '200% 200%',
+                }}
+              >
                 SoQC
               </h1>
 
-              {/* Truly Transparent Canvas Video Wrapper */}
-              <div style={{
-                position: 'relative',
-                width: 'min(420px, 85vw)',
-                height: 220,
-                margin: '0 auto 8px',
-                pointerEvents: 'none',
-              }}>
+              <div
+                style={{
+                  position: 'relative',
+                  width: 'min(420px, 85vw)',
+                  height: 220,
+                  margin: '0 auto 8px',
+                  pointerEvents: 'none',
+                }}
+              >
                 <TransparentVideo src="/schrodinger-cat.mp4" />
               </div>
 
-              <p style={{
-                fontFamily: 'Outfit',
-                fontSize: 'clamp(16px, 2.5vw, 20px)',
-                color: 'rgba(248,248,255,0.7)',
-                maxWidth: 600,
-                margin: '0 auto 12px',
-                fontWeight: 300,
-                letterSpacing: '0.01em',
-                lineHeight: 1.4,
-              }}>
+              <p
+                style={{
+                  fontFamily: 'Outfit',
+                  fontSize: 'clamp(16px, 2.5vw, 20px)',
+                  color: 'rgba(248,248,255,0.7)',
+                  maxWidth: 600,
+                  margin: '0 auto 12px',
+                  fontWeight: 300,
+                  letterSpacing: '0.01em',
+                  lineHeight: 1.4,
+                }}
+              >
                 Exploring the quantum frontier
               </p>
 
-              <p style={{
-                fontFamily: 'Inter',
-                fontSize: 15,
-                color: 'rgba(248,248,255,0.4)',
-                maxWidth: 500,
-                margin: '0 auto',
-                lineHeight: 1.6,
-              }}>
+              <p
+                style={{
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  color: 'rgba(248,248,255,0.4)',
+                  maxWidth: 500,
+                  margin: '0 auto',
+                  lineHeight: 1.6,
+                }}
+              >
                 Where quantum mechanics meets computation. We research, build, and teach
                 the technologies that will define the next era of information processing.
               </p>
             </div>
           </SceneLayer>
 
-          {/* ═══════════ 2. WHATSAPP BANNER (Z=-1200) ═══════════ */}
+          {/* WHATSAPP BANNER LAYER */}
           <SceneLayer baseZ={-1200} vScroll={vScroll}>
-            <div style={{ width: 'min(900px, 90vw)', pointerEvents: 'auto' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(37,211,102,0.08), rgba(124,58,237,0.08))',
-                border: '1px solid rgba(37,211,102,0.2)',
-                borderRadius: 20,
-                padding: '40px 48px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 24,
-                flexWrap: 'wrap',
-              }}>
+            <div style={{ width: 'min(900px, 90vw)', pointerEvents: 'auto', position: 'relative', zIndex: 100 }}>
+              <div
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(37,211,102,0.08), rgba(124,58,237,0.08))',
+                  border: '1px solid rgba(37,211,102,0.2)',
+                  borderRadius: 20,
+                  padding: '32px 36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 24,
+                  flexWrap: 'wrap',
+                }}
+              >
                 <div>
-                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: 'rgba(37,211,102,0.7)', letterSpacing: '0.15em', marginBottom: 8, textTransform: 'uppercase' }}>
+                  <div
+                    style={{
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: 11,
+                      color: 'rgba(37,211,102,0.7)',
+                      letterSpacing: '0.15em',
+                      marginBottom: 8,
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     WhatsApp Community
                   </div>
-                  <h3 style={{ fontFamily: 'Outfit', fontSize: 28, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+                  <h3
+                    style={{
+                      fontFamily: 'Outfit',
+                      fontSize: 28,
+                      fontWeight: 700,
+                      color: '#fff',
+                      marginBottom: 8,
+                    }}
+                  >
                     Join 500+ Quantum Enthusiasts
                   </h3>
-                  <p style={{ color: 'rgba(248,248,255,0.5)', fontSize: 14, fontFamily: 'Inter' }}>
+                  <p
+                    style={{
+                      color: 'rgba(248,248,255,0.5)',
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                    }}
+                  >
                     Stay updated with events, discussions, resources and more.
                   </p>
                 </div>
@@ -325,6 +429,10 @@ export default function Home() {
                   href="https://chat.whatsapp.com/ISr5PjCc5B348ctJSBkKEj?mode=wwc"
                   target="_blank"
                   rel="noreferrer"
+                  onMouseEnter={handleHoverStart}
+                  onMouseLeave={handleHoverEnd}
+                  onTouchStart={handleHoverStart}
+                  onTouchEnd={handleHoverEnd}
                   style={{
                     padding: '14px 32px',
                     background: 'linear-gradient(135deg, #25d366, #128c7e)',
@@ -338,6 +446,11 @@ export default function Home() {
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
                     pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 200,
+                    display: 'inline-block',
+                    boxShadow: '0 4px 20px rgba(37,211,102,0.3)',
+                    WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   Join Now
@@ -346,41 +459,74 @@ export default function Home() {
             </div>
           </SceneLayer>
 
-          {/* ═══════════ 3. QUICK NAVIGATION (Z=-2400) ═══════════ */}
+          {/* EXPLORE MENU LAYER */}
           <SceneLayer baseZ={-2400} vScroll={vScroll}>
-            <div style={{ width: 'min(1000px, 90vw)', pointerEvents: 'auto' }}>
-              <h2 style={{
-                fontFamily: 'Outfit',
-                fontSize: 'clamp(32px, 4vw, 48px)',
-                fontWeight: 800,
-                background: 'linear-gradient(135deg, #fff, #c4b5fd)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                textAlign: 'center',
-                marginBottom: 40,
-              }}>Explore SoQC</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-                {[
-                  { to: '/events', label: 'Events', desc: 'Workshops & seminars', icon: '◈', color: '#7c3aed' },
-                  { to: '/articles', label: 'Articles', desc: 'Quantum knowledge', icon: '∂', color: '#a855f7' },
-                  { to: '/projects', label: 'Projects', desc: 'Research & builds', icon: '⬡', color: '#c4b5fd' },
-                  { to: '/committee', label: 'Committee', desc: 'Meet the team', icon: '◉', color: '#d946ef' },
-                  { to: '/logo', label: 'Our Logo', desc: 'The story behind it', icon: '∞', color: '#8b5cf6' },
-                ].map((item) => (
-                  <Link to={item.to} key={item.to} style={{ textDecoration: 'none', pointerEvents: 'auto' }}>
-                    <div style={{
-                      background: 'rgba(124,58,237,0.06)',
-                      border: '1px solid rgba(196,181,253,0.1)',
-                      borderRadius: 16,
-                      padding: '28px 20px',
-                      textAlign: 'center',
-                      transition: 'all 0.3s ease',
-                      cursor: 'pointer',
-                    }}>
-                      <div style={{ fontSize: 32, marginBottom: 12, color: item.color }}>{item.icon}</div>
-                      <div style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 18, color: '#fff', marginBottom: 6 }}>{item.label}</div>
-                      <div style={{ fontFamily: 'Inter', fontSize: 12, color: 'rgba(248,248,255,0.4)' }}>{item.desc}</div>
+            <div style={{ width: 'min(1000px, 92vw)', pointerEvents: 'auto', position: 'relative', zIndex: 100 }}>
+              <h2
+                style={{
+                  fontFamily: 'Outfit',
+                  fontSize: 'clamp(28px, 4vw, 48px)',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #fff, #c4b5fd)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textAlign: 'center',
+                  marginBottom: 28,
+                  pointerEvents: 'none',
+                }}
+              >
+                Explore SoQC
+              </h2>
+
+              <div className="explore-grid">
+                {exploreItems.map((item) => (
+                  <Link
+                    to={item.to}
+                    key={item.to}
+                    onMouseEnter={handleHoverStart}
+                    onMouseLeave={handleHoverEnd}
+                    onTouchStart={handleHoverStart}
+                    onTouchEnd={handleHoverEnd}
+                    style={{
+                      textDecoration: 'none',
+                      pointerEvents: 'auto',
+                      display: 'block',
+                      position: 'relative',
+                      zIndex: 200,
+                    }}
+                  >
+                    <div className="interactive-card">
+                      <div
+                        style={{
+                          fontSize: 28,
+                          marginBottom: 8,
+                          color: item.color,
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: 'Outfit',
+                          fontWeight: 700,
+                          fontSize: 16,
+                          color: '#fff',
+                          marginBottom: 4,
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: 'Inter',
+                          fontSize: 11,
+                          color: 'rgba(248,248,255,0.45)',
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {item.desc}
+                      </div>
                     </div>
                   </Link>
                 ))}
@@ -388,30 +534,35 @@ export default function Home() {
             </div>
           </SceneLayer>
 
-          {/* ═══════════ 4. OUTRO LOGO (Z=-3600) ═══════════ */}
+          {/* OUTRO LOGO LAYER */}
           <SceneLayer baseZ={-3600} vScroll={vScroll}>
-            <div style={{
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <div style={{
-                width: 120,
-                height: 120,
-                margin: '0 auto 24px',
+            <div
+              style={{
+                textAlign: 'center',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: '50%',
-                background: 'rgba(124,58,237,0.1)',
-                border: '1px solid rgba(196,181,253,0.2)',
-                boxShadow: '0 0 50px rgba(124,58,237,0.4)',
-                padding: 16,
-              }}>
+                pointerEvents: 'none',
+              }}
+            >
+              <div
+                style={{
+                  width: 120,
+                  height: 120,
+                  margin: '0 auto 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  background: 'rgba(124,58,237,0.1)',
+                  border: '1px solid rgba(196,181,253,0.2)',
+                  boxShadow: '0 0 50px rgba(124,58,237,0.4)',
+                  padding: 16,
+                }}
+              >
                 <img
-                  src="../data/logo/soqc-logo-step-4.png"
+                  src="/soqc-logo.png"
                   alt="SoQC Logo"
                   style={{
                     width: '100%',
@@ -421,28 +572,31 @@ export default function Home() {
                   }}
                 />
               </div>
-              
-              <h2 style={{
-                fontFamily: 'Outfit',
-                fontSize: 32,
-                fontWeight: 800,
-                color: '#fff',
-                marginBottom: 12,
-              }}>
+
+              <h2
+                style={{
+                  fontFamily: 'Outfit',
+                  fontSize: 32,
+                  fontWeight: 800,
+                  color: '#fff',
+                  marginBottom: 12,
+                }}
+              >
                 Society of Quantum Computing
               </h2>
-              <div style={{
-                fontFamily: 'JetBrains Mono',
-                fontSize: 14,
-                color: '#a855f7',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-              }}>
+              <div
+                style={{
+                  fontFamily: 'JetBrains Mono',
+                  fontSize: 14,
+                  color: '#a855f7',
+                  letterSpacing: '0.2em',
+                  textTransform: 'uppercase',
+                }}
+              >
                 The journey continues
               </div>
             </div>
           </SceneLayer>
-
         </motion.div>
       </div>
     </div>

@@ -33,7 +33,7 @@ const logoSteps = [
     shortTitle: "The foundation",
     description:
       "The | ⟩ notation comes from Dirac's bra-ket notation — a fundamental mathematical language used to describe quantum states.",
-    image: "../data/logo/soqc-logo-step-1.png",
+    image: "/logo/soqc-logo-step-1.png",
   },
   {
     id: 2,
@@ -41,7 +41,7 @@ const logoSteps = [
     shortTitle: "The qubit",
     description:
       "The ↑ and ↓ spin states represent the two basis states of a qubit, capturing the fundamental quantum states used in quantum computing.",
-    image: "../data/logo/soqc-logo-step-2.png",
+    image: "/logo/soqc-logo-step-2.png",
   },
   {
     id: 3,
@@ -49,7 +49,7 @@ const logoSteps = [
     shortTitle: "Superposition & entanglement",
     description:
       "The dotted paths connect the quantum states, representing the interconnected and probabilistic nature of quantum systems.",
-    image: "../data/logo/soqc-logo-step-3.png",
+    image: "/logo/soqc-logo-step-3.png",
   },
   {
     id: 4,
@@ -57,7 +57,7 @@ const logoSteps = [
     shortTitle: "Computing in action",
     description:
       "The chip brings the concepts together, representing quantum mechanics being applied to physical computing hardware.",
-    image: "../data/logo/soqc-logo-step-4.png",
+    image: "/logo/soqc-logo-step-4.png",
   },
 ];
 

@@ -76,9 +76,6 @@ export default function App() {
       /*
        * Large Tablet
        * 1024px - 1199px
-       *
-       * Adjust these breakpoints if your Navigation
-       * component uses different definitions.
        */
       setIsLTablet(width >= 1024 && width < 1200);
     };
@@ -130,7 +127,7 @@ export default function App() {
 }
 
 /* =========================================================
-   ANIMATED ROUTES
+   ANIMATED ROUTES PROPS & COMPONENT
    ========================================================= */
 
 interface AnimatedRoutesProps {
@@ -153,11 +150,9 @@ interface AnimatedRoutesProps {
   onRejectArticle: (id: string | number) => void;
 
   isMobile: boolean;
-}
 
-/* =========================================================
-   ROUTES
-   ========================================================= */
+  setIsHoveringInteractive: (isHovering: boolean) => void;
+}
 
 function AnimatedRoutes({
   user,
@@ -167,6 +162,7 @@ function AnimatedRoutes({
   onApproveArticle,
   onRejectArticle,
   isMobile,
+  setIsHoveringInteractive,
 }: AnimatedRoutesProps) {
   const location = useLocation();
 
@@ -225,7 +221,7 @@ function AnimatedRoutes({
             element={
               <PageTransition>
                 <Suspense fallback={null}>
-                  <Home />
+                  <Home setIsHoveringInteractive={setIsHoveringInteractive} />
                 </Suspense>
               </PageTransition>
             }
@@ -457,17 +453,12 @@ function AppContent({
 }: AppContentProps) {
   const location = useLocation();
 
-  /* =======================================================
-     IMMERSIVE PAGES
-     ======================================================= */
-
   const isImmersive =
     location.pathname === "/" ||
     location.pathname === "/committee";
 
-  /* =======================================================
-     USER AUTH STATE
-     ======================================================= */
+  /* State to check if user is hovering over interactive elements */
+  const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
 
   const [user, setUser] = useState<{
     name: string;
@@ -481,20 +472,12 @@ function AppContent({
     setUser(userData);
   };
 
-  /* =======================================================
-     ARTICLES
-     ======================================================= */
-
   const [articles, setArticles] = useState(() =>
     initialArticles.map((art: any) => ({
       ...art,
       status: art.status || "approved",
     }))
   );
-
-  /* =======================================================
-     ADD ARTICLE
-     ======================================================= */
 
   const handleAddArticle = (newArticle: any) => {
     const articleWithStatus = {
@@ -508,40 +491,19 @@ function AppContent({
     ]);
   };
 
-  /* =======================================================
-     APPROVE ARTICLE
-     ======================================================= */
-
-  const handleApproveArticle = (
-    id: string | number
-  ) => {
+  const handleApproveArticle = (id: string | number) => {
     setArticles((prev) =>
       prev.map((art) =>
-        art.id === id
-          ? {
-              ...art,
-              status: "approved",
-            }
-          : art
+        art.id === id ? { ...art, status: "approved" } : art
       )
     );
   };
 
-  /* =======================================================
-     REJECT ARTICLE
-     ======================================================= */
-
-  const handleRejectArticle = (
-    id: string | number
-  ) => {
+  const handleRejectArticle = (id: string | number) => {
     setArticles((prev) =>
       prev.filter((art) => art.id !== id)
     );
   };
-
-  /* =======================================================
-     APPLICATION UI
-     ======================================================= */
 
   return (
     <>
@@ -553,22 +515,13 @@ function AppContent({
           overflowX: "hidden",
         }}
       >
-        {/* =================================================
-            QUANTUM BACKGROUND
-        ================================================= */}
-
+        {/* QUANTUM BACKGROUND */}
         <QuantumBackground />
 
-        {/* =================================================
-            CUSTOM CURSOR
-        ================================================= */}
-
+        {/* CUSTOM CURSOR */}
         {!isMobile && <CustomCursor />}
 
-        {/* =================================================
-            LIQUID ETHER
-        ================================================= */}
-
+        {/* LIQUID ETHER BACKGROUND */}
         <div
           style={{
             position: "fixed",
@@ -578,24 +531,21 @@ function AppContent({
             height: "100vh",
             zIndex: 0,
             pointerEvents: "none",
-            opacity: 0.12,
+            opacity: isHoveringInteractive ? 0.02 : 0.12,
+            transition: "opacity 0.3s ease",
           }}
         >
           <LiquidEther
-            colors={[
-              "#5227FF",
-              "#FF9FFC",
-              "#B497CF",
-            ]}
-            mouseForce={isMobile ? 10 : 20}
-            cursorSize={isMobile ? 50 : 100}
+            colors={["#5227FF", "#FF9FFC", "#B497CF"]}
+            mouseForce={isHoveringInteractive ? 0 : isMobile ? 10 : 20}
+            cursorSize={isHoveringInteractive ? 0 : isMobile ? 50 : 100}
             isViscous
             viscous={30}
             iterationsViscous={32}
             iterationsPoisson={32}
             resolution={isMobile ? 0.8 : 0.5}
             isBounce={false}
-            autoDemo
+            autoDemo={!isHoveringInteractive}
             autoSpeed={0.5}
             autoIntensity={2.2}
             takeoverDuration={0.25}
@@ -604,26 +554,19 @@ function AppContent({
           />
         </div>
 
-        {/* =================================================
-            NOISE OVERLAY
-        ================================================= */}
-
+        {/* NOISE OVERLAY */}
         <div
           style={{
             position: "fixed",
             inset: 0,
-            backgroundImage:
-              `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
             opacity: 0.025,
             pointerEvents: "none",
             zIndex: 2,
           }}
         />
 
-        {/* =================================================
-            AURORA BLOBS
-        ================================================= */}
-
+        {/* AURORA BLOBS */}
         <div
           style={{
             position: "fixed",
@@ -634,64 +577,46 @@ function AppContent({
           }}
         >
           {/* Top-right */}
-
           <div
             style={{
               position: "absolute",
               top: "-20%",
               right: "-10%",
-              width: isMobile
-                ? "80vw"
-                : "60vw",
-              height: isMobile
-                ? "80vw"
-                : "60vw",
+              width: isMobile ? "80vw" : "60vw",
+              height: isMobile ? "80vw" : "60vw",
               background:
                 "radial-gradient(ellipse, rgba(124,58,237,0.08) 0%, transparent 70%)",
-              animation:
-                "aurora 20s ease-in-out infinite",
+              animation: "aurora 20s ease-in-out infinite",
             }}
           />
 
           {/* Bottom-left */}
-
           <div
             style={{
               position: "absolute",
               bottom: "-20%",
               left: "-10%",
-              width: isMobile
-                ? "70vw"
-                : "50vw",
-              height: isMobile
-                ? "70vw"
-                : "50vw",
+              width: isMobile ? "70vw" : "50vw",
+              height: isMobile ? "70vw" : "50vw",
               background:
                 "radial-gradient(ellipse, rgba(217,70,239,0.06) 0%, transparent 70%)",
-              animation:
-                "aurora 25s ease-in-out infinite reverse",
+              animation: "aurora 25s ease-in-out infinite reverse",
             }}
           />
         </div>
 
-        {/* =================================================
-            NAVIGATION
-        ================================================= */}
-
+        {/* NAVIGATION */}
         <Navigation
           isMobile={isMobile}
           isTablet={isTablet}
           isLTablet={isLTablet}
         />
 
-        {/* =================================================
-            MAIN CONTENT
-        ================================================= */}
-
+        {/* MAIN CONTENT */}
         <main
           style={{
             position: "relative",
-            zIndex: 1,
+            zIndex: 10,
             minHeight: "100vh",
           }}
         >
@@ -703,23 +628,18 @@ function AppContent({
             onApproveArticle={handleApproveArticle}
             onRejectArticle={handleRejectArticle}
             isMobile={isMobile}
+            setIsHoveringInteractive={setIsHoveringInteractive}
           />
         </main>
 
-        {/* =================================================
-            FOOTER
-        ================================================= */}
-
+        {/* FOOTER */}
         {!isImmersive && (
           <footer
             style={{
               position: "relative",
-              zIndex: 1,
-              borderTop:
-                "1px solid rgba(196,181,253,0.06)",
-              padding: isMobile
-                ? "24px 16px"
-                : "40px 24px",
+              zIndex: 10,
+              borderTop: "1px solid rgba(196,181,253,0.06)",
+              padding: isMobile ? "24px 16px" : "40px 24px",
               textAlign: "center",
             }}
           >
@@ -732,13 +652,10 @@ function AppContent({
                 alignItems: "center",
                 flexWrap: "wrap",
                 gap: isMobile ? 12 : 16,
-                flexDirection: isMobile
-                  ? "column"
-                  : "row",
+                flexDirection: isMobile ? "column" : "row",
               }}
             >
               {/* Logo */}
-
               <div
                 style={{
                   display: "flex",
@@ -754,18 +671,15 @@ function AppContent({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 12,
-                    background:
-                      "rgba(124,58,237,0.1)",
-                    border:
-                      "1px solid rgba(196,181,253,0.2)",
-                    boxShadow:
-                      "0 0 25px rgba(124,58,237,0.25)",
+                    background: "rgba(124,58,237,0.1)",
+                    border: "1px solid rgba(196,181,253,0.2)",
+                    boxShadow: "0 0 25px rgba(124,58,237,0.25)",
                     overflow: "hidden",
                     flexShrink: 0,
                   }}
                 >
                   <img
-                    src="../data/logo/soqc-logo-step-4.png"
+                    src="/soqc-logo.png"
                     alt="SoQC Logo"
                     style={{
                       width: "80%",
@@ -789,30 +703,25 @@ function AppContent({
               </div>
 
               {/* Copyright */}
-
               <p
                 style={{
                   fontFamily: "Inter",
                   fontSize: isMobile ? 10 : 12,
-                  color:
-                    "rgba(248,248,255,0.25)",
+                  color: "rgba(248,248,255,0.25)",
                   letterSpacing: "0.02em",
                   textAlign: "center",
                   margin: 0,
                 }}
               >
-                Society of Quantum Computing ·{" "}
-                {new Date().getFullYear()}
+                Society of Quantum Computing · {new Date().getFullYear()}
               </p>
 
               {/* Quantum Equation */}
-
               <p
                 style={{
                   fontFamily: "JetBrains Mono",
                   fontSize: isMobile ? 10 : 11,
-                  color:
-                    "rgba(248,248,255,0.2)",
+                  color: "rgba(248,248,255,0.2)",
                   letterSpacing: "0.1em",
                   margin: 0,
                 }}
