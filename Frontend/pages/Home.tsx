@@ -115,12 +115,10 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
     }
   }, [])
 
-  // Parallax movements through space as user scrolls
   const deepZOffset = useTransform(vScroll, (v: number) => v * 0.25)
   const midZOffset = useTransform(vScroll, (v: number) => v * 0.6)
   const foreZOffset = useTransform(vScroll, (v: number) => v * 0.95)
 
-  // Floating motions for organic celestial drift
   const floatDriftA = {
     x: [-8, 8, -8],
     y: [-6, 6, -6],
@@ -168,7 +166,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
       <motion.div style={{ position: 'absolute', inset: 0, z: midZOffset, transformStyle: 'preserve-3d' }}>
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
           
-          {/* Top-Left: SoQC Ket Logo Constellation */}
           <motion.g animate={floatDriftA} style={{ transformOrigin: 'center' }}>
             <g transform="translate(100, 80) scale(0.95)">
               <path
@@ -183,7 +180,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
             </g>
           </motion.g>
 
-          {/* Top-Right: Entangled Pair Nodes */}
           <motion.g animate={floatDriftB}>
             <g transform="translate(1120, 90) scale(0.9)">
               <line x1="20" y1="30" x2="110" y2="30" stroke="rgba(255,255,255,0.2)" strokeWidth="0.75" />
@@ -200,7 +196,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
       <motion.div style={{ position: 'absolute', inset: 0, z: useTransform(vScroll, (v: number) => v * 0.6 - 600), transformStyle: 'preserve-3d' }}>
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
           
-          {/* Mid-Left: Orion's Belt Easter Egg */}
           <motion.g animate={floatDriftB}>
             <g transform="translate(120, 480) scale(0.85)">
               <line x1="15" y1="40" x2="45" y2="30" stroke="rgba(255,255,255,0.22)" strokeWidth="0.75" />
@@ -215,7 +210,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
             </g>
           </motion.g>
 
-          {/* Mid-Right Vector State Cluster */}
           <motion.g animate={floatDriftA}>
             <g transform="translate(1080, 420) scale(0.85)">
               <line x1="40" y1="10" x2="40" y2="80" stroke="rgba(255,255,255,0.22)" strokeWidth="0.75" strokeDasharray="2 2" />
@@ -234,7 +228,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
       <motion.div style={{ position: 'absolute', inset: 0, z: useTransform(vScroll, (v: number) => v * 0.6 - 1200), transformStyle: 'preserve-3d' }}>
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
           
-          {/* Bottom-Left: Cassiopeia 'W' Shape */}
           <motion.g animate={floatDriftA}>
             <g transform="translate(140, 780) scale(0.85)">
               <path d="M 10,20 L 30,45 L 50,25 L 75,50 L 95,30" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.75" />
@@ -244,7 +237,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
             </g>
           </motion.g>
 
-          {/* Bottom-Right: Quantum Node Grid */}
           <motion.g animate={floatDriftB}>
             <g transform="translate(1060, 740) scale(0.85)">
               <circle cx="40" cy="40" r="18" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.75" />
@@ -264,7 +256,6 @@ function GalaxyStarfield({ vScroll }: { vScroll: any }) {
       <motion.div style={{ position: 'absolute', inset: 0, z: useTransform(vScroll, (v: number) => v * 0.6 - 1800), transformStyle: 'preserve-3d' }}>
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
           
-          {/* Center Space: Infinity Loop Path */}
           <motion.g animate={floatDriftA}>
             <g transform="translate(620, 840) scale(0.9)">
               <path d="M 20,30 Q 40,10 60,30 T 100,30 Q 80,50 60,30 T 20,30" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.75" strokeDasharray="3 3" />
@@ -367,8 +358,9 @@ function SceneLayer({
     ['blur(25px) saturate(0.5)', 'blur(0px) saturate(1)', 'blur(0px) saturate(1)', 'blur(15px) saturate(1.2)', 'blur(30px)']
   )
 
+  // Explicitly activate pointer hit detection when this layer moves into view range
   const pointerEvents = useTransform(z, (currentZ: number) =>
-    currentZ > -400 && currentZ < 200 ? 'auto' : 'none'
+    currentZ > -300 && currentZ < 300 ? 'auto' : 'none'
   )
 
   return (
@@ -452,13 +444,15 @@ export default function Home() {
       overflow: 'hidden',
       background: '#04030a',
       zIndex: 1,
-      pointerEvents: 'none',
+      pointerEvents: 'auto',
+      cursor: 'default',
     }}>
       <div style={{
         position: 'absolute',
         inset: 0,
         perspective: '1200px',
         transformStyle: 'preserve-3d',
+        pointerEvents: 'none', // Allow mouse hits to pass through empty 3D perspective space directly to active SceneLayers
       }}>
         <motion.div style={{
           width: '100%',
@@ -466,6 +460,7 @@ export default function Home() {
           transformStyle: 'preserve-3d',
           rotateX: tiltX,
           rotateY: tiltY,
+          pointerEvents: 'none',
         }}>
 
           {/* ═══════════ GALAXY STARFIELD & DEPTHED CONSTELLATIONS ═══════════ */}
@@ -499,7 +494,7 @@ export default function Home() {
                 letterSpacing: '0.1em',
               }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 6px #a855f7', display: 'inline-block' }} />
-                Society of Quantum Computing — Est. 2023
+                Society of Quantum Computing — Est. 2025
               </div>
 
               <h1 style={{

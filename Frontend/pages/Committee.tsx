@@ -1375,7 +1375,7 @@ export default function Committee() {
                       textTransform: "uppercase",
                     }}
                   >
-                    <TypewriterLabel text="// PROFILE DECRYPTED" delay={320} />
+                    <TypewriterLabel text="// PROFILE MEASURED AND COLLAPSED" delay={320} />
                   </motion.div>
 
                   <h2
